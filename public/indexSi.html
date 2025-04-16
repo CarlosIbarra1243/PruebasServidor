@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monitor de Sensores</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        #connectionStatus { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background-color: #ff4444; transition: background-color 0.3s ease; }
+        .status-dot.active { background-color: #00C851; }
+        .tooltip { font-size: 0.9em; color: #666; margin-left: auto; }
+        #dataContainer { border: 1px solid #ccc; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        #deviceSelector { margin-bottom: 20px; padding: 5px; width: 100%; }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .chart-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 300px; }
+        #chartsContainer h2 { margin: 25px 0 15px 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Monitor de Sensores en Tiempo Real</h1>
+    
+    <div id="connectionStatus">
+        <span>Estado de conexión: </span>
+        <div class="status-dot"></div>
+        <span id="statusText">Desconectado</span>
+        <div id="lastUpdate" class="tooltip">Última actualización: --</div>
+    </div>
+
+    <select id="deviceSelector" onchange="updateDisplay()">
+        <option value="">Seleccione un dispositivo</option>
+    </select>
+
+    <div id="dataContainer">
+        <h2>Datos del Sensor:</h2>
+        <p>ID: <span id="id"></span></p>
+        <p>Fecha: <span id="fecha"></span></p>
+        <p>Hora: <span id="hora"></span></p>
+        <p>Temperatura Consigna: <span id="TempCon"></span>°C</p>
+        <p>Temperatura Refrigeración: <span id="TempRef"></span>°C</p>
+        <p>Temperatura Ambiente: <span id="TempAmb"></span>°C</p>
+        <p>Humedad Ambiente: <span id="HumAmb"></span>%</p>
+        <p>Consumo Energético: <span id="EnerCon"></span>W</p>
+        <p>Estado Puerta Consigna: <span id="PuerCon"></span></p>
+        <p>Estado Puerta Refrigeración: <span id="PuerRef"></span></p>
+    </div>
+
+    <div id="chartsContainer">
+        <h2>Histórico de Datos (Últimos 15 registros)</h2>
+        <div class="chart-grid">
+            <div class="chart-container"><canvas id="tempChart"></canvas></div>
+            <div class="chart-container"><canvas id="humChart"></canvas></div>
+            <div class="chart-container"><canvas id="energyChart"></canvas></div>
+            <div class="chart-container"><canvas id="doorsChart"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:3000');
+        const deviceSelector = document.getElementById('deviceSelector');
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.getElementById('statusText');
+        const lastUpdate = document.getElementById('lastUpdate');
+        let devicesData = {};
+        let selectedDeviceId = '';
+        let tempChart, humChart, energyChart, doorsChart;
+        const maxDataPoints = 15;
+
+        // Configuración WebSocket
+        ws.onopen = () => updateStatus(true, 'Conectado');
+        ws.onclose = () => updateStatus(false, 'Desconectado');
+        ws.onerror = () => updateStatus(false, 'Error de conexión');
+        ws.onmessage = (event) => handleDataUpdate(event.data);
+
+
+
+
+        function updateStatus(connected, text) {
+            statusDot.classList.toggle('active', connected);
+            statusText.textContent = text;
+            lastUpdate.textContent = `Última actualización: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function handleDataUpdate(data) {
+            devicesData = JSON.parse(data).devices;
+            document.getElementById('dataContainer').classList.add('update-animation');
+            setTimeout(() => document.getElementById('dataContainer').classList.remove('update-animation'), 1000);
+            updateDeviceList();
+            updateDisplay();
+        }
+
+        function updateDeviceList() {
+            const currentOptions = Array.from(deviceSelector.options).map(opt => opt.value);
+            Object.keys(devicesData).forEach(id => {
+                if (!currentOptions.includes(id)) {
+                    const option = new Option(`Dispositivo ${id}`, id);
+                    deviceSelector.add(option);
+                }
+            });
+            deviceSelector.value = devicesData[selectedDeviceId] ? selectedDeviceId : '';
+        }
+
+
+
+        function updateTextValues(data) {
+            document.getElementById('id').textContent = data.id;
+            document.getElementById('fecha').textContent = data.fecha;
+            document.getElementById('hora').textContent = data.hora;
+            document.getElementById('TempCon').textContent = data.TempCon;
+            document.getElementById('TempRef').textContent = data.TempRef;
+            document.getElementById('TempAmb').textContent = data.TempAmb;
+            document.getElementById('HumAmb').textContent = data.HumAmb;
+            document.getElementById('EnerCon').textContent = data.EnerCon;
+            document.getElementById('PuerCon').textContent = data.PuerCon ? 'Abierta' : 'Cerrada';
+            document.getElementById('PuerRef').textContent = data.PuerRef ? 'Abierta' : 'Cerrada';
+        }
+
+        function createChart(id, type, labels, colors, unit) {
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true }
+            }
+        };
+
+        return new Chart(document.getElementById(id), {
+            type: type,
+            data: {
+                labels: [],
+                datasets: labels.map((label, i) => ({
+                    label: label,
+                    data: [],
+                    borderColor: type === 'line' ? colors[i] : undefined,
+                    backgroundColor: type === 'bar' ? colors[i] : undefined,
+                    tension: 0.3
+                }))
+            },
+            options: {
+                ...commonOptions,
+                scales: { 
+                    y: { 
+                        title: { 
+                            display: true, 
+                            text: unit 
+                        } 
+                    } 
+                }
+            }
+        });
+    }
+
+    function updateDisplay() {
+        const previousDeviceId = selectedDeviceId;
+        selectedDeviceId = deviceSelector.value;
+        
+        if (selectedDeviceId && devicesData[selectedDeviceId]) {
+            const data = devicesData[selectedDeviceId];
+            
+            if (previousDeviceId !== selectedDeviceId) {
+                resetCharts();
+                initializeCharts();
+            }
+            
+            updateTextValues(data);
+            updateCharts(data);
+        }
+    }
+
+    function resetCharts() {
+        [tempChart, humChart, energyChart, doorsChart].forEach(chart => {
+            if (chart) {
+                chart.destroy();
+            }
+        });
+    }
+
+    function initializeCharts() {
+        resetCharts();
+        
+        tempChart = createChart('tempChart', 'line', 
+            ['TempCon', 'TempRef', 'TempAmb'], 
+            ['#ff6384', '#36a2eb', '#4bc0c0'], 
+            '°C'
+        );
+        
+        humChart = createChart('humChart', 'line', 
+            ['Humedad Ambiente'], 
+            ['#ff9f40'], 
+            '%'
+        );
+        
+        energyChart = createChart('energyChart', 'line', 
+            ['Consumo Energético'], 
+            ['#9966ff'], 
+            'W'
+        );
+        
+        doorsChart = createChart('doorsChart', 'bar', 
+            ['Puerta Consigna', 'Puerta Refrigeración'], 
+            ['#ffcd56', '#c9cbcf'], 
+            'Estado'
+        );
+    }
+    
+    function updateCharts(newData) {
+    // Actualizar labels (hora)
+    const labels = tempChart.data.labels;
+    labels.push(newData.hora);
+    if (labels.length > maxDataPoints) labels.shift();
+
+    // Actualizar datasets para cada gráfica
+    updateChartDataset(tempChart, [
+        newData.TempCon,
+        newData.TempRef,
+        newData.TempAmb
+    ]);
+    
+    updateChartDataset(humChart, [newData.HumAmb]);
+    updateChartDataset(energyChart, [newData.EnerCon]);
+    updateChartDataset(doorsChart, [
+        newData.PuerCon ? 1 : 0,
+        newData.PuerRef ? 1 : 0
+    ]);
+
+    // Actualizar labels en todas las gráficas
+    [tempChart, humChart, energyChart, doorsChart].forEach(chart => {
+        chart.data.labels = [...labels];
+        chart.update('none'); // 'none' para evitar animación de reset
+    });
+}
+
+function updateChartDataset(chart, values) {
+    chart.data.datasets.forEach((dataset, index) => {
+        // Agregar nuevo valor
+        dataset.data.push(values[index]);
+        
+        // Mantener máximo 15 puntos
+        if (dataset.data.length > maxDataPoints) {
+            dataset.data.shift();
+        }
+    });
+    chart.update('none');
+}
+
+        function getChartValue(data, chart, index) {
+            switch(chart.id) {
+                case 'tempChart': return [data.TempCon, data.TempRef, data.TempAmb][index];
+                case 'humChart': return data.HumAmb;
+                case 'energyChart': return data.EnerCon;
+                case 'doorsChart': return [data.PuerCon ? 1 : 0, data.PuerRef ? 1 : 0][index];
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeCharts);
+    </script>
+</body>
+</html>

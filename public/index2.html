@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor MQTT</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>📡 Datos MQTT en Tiempo Real</h1>
+    <div id="data"></div>
+    <div id="datos"></div>
+
+
+    <script>
+        const socket = io();
+
+        socket.on("mqtt_message", (data) => {
+            console.log(`📩 Tópico: ${data.topic}, Mensaje: ${data.message}`);
+            document.getElementById("data").innerHTML = `<p><strong>${data.topic}:</strong> ${data.message}°C</p>`;
+        });
+
+// Recibir notificación cuando un dispositivo MQTT se conecta o desconecta
+socket.on("estadoDis", (data) => {
+    if (data.estado === 0) {
+        console.log(`⚠️ ${data.message}`);
+        document.getElementById("datos").innerHTML = `<p style="color: red;">⚠️ ${data.message}</p>`;
+    } else {
+        console.log(`${data.message}`);
+        document.getElementById("datos").innerHTML = `<p style="color: green;">${data.message}</p>`;
+    }
+});
+
+    </script>
+</body>
+</html>

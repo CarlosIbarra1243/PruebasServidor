@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IoT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+        h2 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        #status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #333;
+            z-index: 1000;
+        }
+        .status-panel {
+            margin-bottom: 30px;
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .devices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .device-card {
+            background: #3d3d3d;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .device-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .device-name {
+            font-weight: bold;
+            color: #fff;
+        }
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .online {
+            background: #4CAF50;
+            box-shadow: 0 0 8px #4CAF5050;
+        }
+        .offline {
+            background: #ff4444;
+        }
+        .last-seen {
+            color: #888;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 Desconectado</div>
+    
+    <div class="status-panel">
+        <h2>Estado de Dispositivos</h2>
+        <div class="devices-container" id="devices-container">
+            <!-- Dispositivos aparecerán aquí -->
+        </div>
+    </div>
+
+    <div class="grid" id="charts-container">
+        <!-- Gráficas se crearán aquí dinámicamente -->
+    </div>
+
+    <script>
+        const socket = io('http://192.168.0.10:3000');
+        const maxDataPoints = 15;
+        const deviceCharts = new Map();
+
+        // Configuración común para gráficas
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#404040' },
+                    ticks: { color: '#fff' }
+                },
+                x: {
+                    grid: { color: '#404040' },
+                    ticks: { 
+                        color: '#fff',
+                        maxTicksLimit: 10
+                    }
+                }
+            },
+            plugins: {
+                legend: { 
+                    labels: { 
+                        color: '#fff',
+                        font: { size: 14 }
+                    } 
+                }
+            }
+        };
+
+        // Función para crear gráficas
+        const createChart = (ctx, label, color) => {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: label,
+                        data: [],
+                        borderColor: color,
+                        backgroundColor: `${color}20`,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+        };
+
+        // Manejar conexión WebSocket
+        socket.on('connect', () => {
+            document.getElementById('status').innerHTML = '🟢 Conectado';
+            document.getElementById('status').style.color = '#4CAF50';
+            socket.emit('subscribe', 1); // Cambiar por el ID de usuario correcto
+        });
+
+        // Actualizar gráficas con nuevos datos
+        socket.on('nuevo_dato', (data) => {
+            const deviceId = data.dispositivo_id;
+            const deviceName = data.dispositivo_nombre;
+            
+            if (!deviceCharts.has(deviceId)) {
+                createDeviceChart(deviceId, deviceName);
+            }
+            
+            updateDeviceCharts(deviceId, data);
+        });
+
+        // Crear gráficas para nuevo dispositivo
+        function createDeviceChart(deviceId, deviceName) {
+            const container = document.getElementById('charts-container');
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h2>${deviceName}</h2>
+                <div class="chart-container">
+                    <canvas id="temp-${deviceId}"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="hum-${deviceId}"></canvas>
+                </div>
+            `;
+            
+            container.appendChild(card);
+            
+            const tempCtx = document.getElementById(`temp-${deviceId}`);
+            const humCtx = document.getElementById(`hum-${deviceId}`);
+            
+            deviceCharts.set(deviceId, {
+                tempChart: createChart(tempCtx, 'Temperatura (°C)', '#ff6384'),
+                humChart: createChart(humCtx, 'Humedad (%)', '#36a2eb')
+            });
+        }
+
+        // Actualizar gráficas específicas
+        function updateDeviceCharts(deviceId, data) {
+            const charts = deviceCharts.get(deviceId);
+            const time = new Date(data.timestamp).toLocaleTimeString();
+            
+            updateChart(charts.tempChart, time, data.temperatura);
+            updateChart(charts.humChart, time, data.humedad);
+        }
+
+        // Función genérica para actualizar gráficas
+        function updateChart(chart, label, value) {
+            if (chart.data.labels.length >= maxDataPoints) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            
+            chart.data.labels.push(label);
+            chart.data.datasets[0].data.push(value);
+            chart.update();
+        }
+
+        // Manejar estado de dispositivos
+        socket.on('estado_dispositivo', (data) => {
+            const container = document.getElementById('devices-container');
+            const deviceId = `device-${data.id}`;
+            let deviceCard = document.getElementById(deviceId);
+
+            if (!deviceCard) {
+                deviceCard = document.createElement('div');
+                deviceCard.className = 'device-card';
+                deviceCard.id = deviceId;
+                deviceCard.innerHTML = `
+                    <div class="device-info">
+                        <span class="device-name">${data.nombre}</span>
+                        <span class="last-seen">Última conexión: ${new Date(data.lastSeen).toLocaleString()}</span>
+                    </div>
+                    <div class="device-status">
+                        <div class="status-indicator ${data.status === 'online' ? 'online' : 'offline'}"></div>
+                        <span>${data.status === 'online' ? 'Conectado' : 'Desconectado'}</span>
+                    </div>
+                `;
+                container.appendChild(deviceCard);
+            } else {
+                const indicator = deviceCard.querySelector('.status-indicator');
+                const statusText = deviceCard.querySelector('.device-status span');
+                const lastSeen = deviceCard.querySelector('.last-seen');
+                
+                indicator.className = `status-indicator ${data.status === 'online' ? 'online' : 'offline'}`;
+                statusText.textContent = data.status === 'online' ? 'Conectado' : 'Desconectado';
+                lastSeen.textContent = `Última conexión: ${new Date(data.lastSeen).toLocaleString()}`;
+            }
+        });
+
+        // Manejar desconexión del dashboard
+        socket.on('disconnect', () => {
+            document.getElementById('status').innerHTML = '🔴 Desconectado';
+            document.getElementById('status').style.color = '#ff4444';
+        });
+    </script>
+</body>
+</html>

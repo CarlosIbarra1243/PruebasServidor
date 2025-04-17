@@ -96,28 +96,53 @@
             color: #888;
             font-size: 0.85em;
         }
+
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .status-box {
+            background: #3d3d3d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .status-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .status-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .port-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+        .port-active { background: #4CAF50; box-shadow: 0 0 8px #4CAF5050; }
+        .port-inactive { background: #ff4444; }
     </style>
 </head>
 <body>
     <div id="status">🔴 Desconectado</div>
-    
+
     <div class="status-panel">
         <h2>Estado de Dispositivos</h2>
-        <div class="devices-container" id="devices-container">
-            <!-- Dispositivos aparecerán aquí -->
-        </div>
+        <div class="devices-container" id="devices-container"></div>
     </div>
 
-    <div class="grid" id="charts-container">
-        <!-- Gráficas se crearán aquí dinámicamente -->
-    </div>
+    <div class="grid" id="charts-container"></div>
 
     <script>
-        const socket = io('http://192.168.0.10:3000');
+        const socket = io('http://10.108.0.2:3000');
         const maxDataPoints = 15;
         const deviceCharts = new Map();
 
-        // Configuración común para gráficas
         const chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
@@ -129,110 +154,104 @@
                 },
                 x: {
                     grid: { color: '#404040' },
-                    ticks: { 
-                        color: '#fff',
-                        maxTicksLimit: 10
-                    }
+                    ticks: { color: '#fff', maxTicksLimit: 10 }
                 }
             },
             plugins: {
-                legend: { 
-                    labels: { 
+                legend: {
+                    labels: {
                         color: '#fff',
                         font: { size: 14 }
-                    } 
+                    }
                 }
             }
         };
 
-        // Función para crear gráficas
-        const createChart = (ctx, label, color) => {
-            return new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: label,
-                        data: [],
-                        borderColor: color,
-                        backgroundColor: `${color}20`,
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        tension: 0.4
-                    }]
-                },
-                options: chartOptions
-            });
-        };
+        const createChart = (ctx, label, color) => new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: label,
+                    data: [],
+                    borderColor: color,
+                    backgroundColor: `${color}20`,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.4
+                }]
+            },
+            options: chartOptions
+        });
 
-        // Manejar conexión WebSocket
         socket.on('connect', () => {
             document.getElementById('status').innerHTML = '🟢 Conectado';
             document.getElementById('status').style.color = '#4CAF50';
-            socket.emit('subscribe', 1); // Cambiar por el ID de usuario correcto
+            socket.emit('subscribe', 1);
         });
 
-        // Actualizar gráficas con nuevos datos
         socket.on('nuevo_dato', (data) => {
             const deviceId = data.dispositivo_id;
             const deviceName = data.dispositivo_nombre;
-            
+
             if (!deviceCharts.has(deviceId)) {
                 createDeviceChart(deviceId, deviceName);
             }
-            
+
             updateDeviceCharts(deviceId, data);
         });
 
-        // Crear gráficas para nuevo dispositivo
         function createDeviceChart(deviceId, deviceName) {
             const container = document.getElementById('charts-container');
-            
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
                 <h2>${deviceName}</h2>
-                <div class="chart-container">
-                    <canvas id="temp-${deviceId}"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="hum-${deviceId}"></canvas>
-                </div>
+                <div class="chart-container"><canvas id="tempCon-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="tempRef-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="tempAmb-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="humAmb-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="enerCon-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="puerCon-${deviceId}"></canvas></div>
+                <div class="chart-container"><canvas id="puerRef-${deviceId}"></canvas></div>
             `;
-            
             container.appendChild(card);
-            
-            const tempCtx = document.getElementById(`temp-${deviceId}`);
-            const humCtx = document.getElementById(`hum-${deviceId}`);
-            
+
             deviceCharts.set(deviceId, {
-                tempChart: createChart(tempCtx, 'Temperatura (°C)', '#ff6384'),
-                humChart: createChart(humCtx, 'Humedad (%)', '#36a2eb')
+                tempConChart: createChart(document.getElementById(`tempCon-${deviceId}`), 'TempCon (°C)', '#ff6384'),
+                tempRefChart: createChart(document.getElementById(`tempRef-${deviceId}`), 'TempRef (°C)', '#ff9f40'),
+                tempAmbChart: createChart(document.getElementById(`tempAmb-${deviceId}`), 'TempAmb (°C)', '#ffcd56'),
+                humAmbChart: createChart(document.getElementById(`humAmb-${deviceId}`), 'HumAmb (%)', '#36a2eb'),
+                enerConChart: createChart(document.getElementById(`enerCon-${deviceId}`), 'EnerCon (kWh)', '#9966ff'),
+                puerConChart: createChart(document.getElementById(`puerCon-${deviceId}`), 'PuerCon', '#4bc0c0'),
+                puerRefChart: createChart(document.getElementById(`puerRef-${deviceId}`), 'PuerRef', '#c9cbcf')
             });
         }
 
-        // Actualizar gráficas específicas
         function updateDeviceCharts(deviceId, data) {
             const charts = deviceCharts.get(deviceId);
-            const time = new Date(data.timestamp).toLocaleTimeString();
-            
-            updateChart(charts.tempChart, time, data.temperatura);
-            updateChart(charts.humChart, time, data.humedad);
+            const combinedDate = new Date(`${data.fecha}T${data.hora}`);
+            const label = isNaN(combinedDate.getTime()) ? new Date().toLocaleTimeString() : combinedDate.toLocaleTimeString();
+
+            updateChart(charts.tempConChart, label, data.TempCon);
+            updateChart(charts.tempRefChart, label, data.TempRef);
+            updateChart(charts.tempAmbChart, label, data.TempAmb);
+            updateChart(charts.humAmbChart, label, data.HumAmb);
+            updateChart(charts.enerConChart, label, data.EnerCon);
+            updateChart(charts.puerConChart, label, data.PuerCon);
+            updateChart(charts.puerRefChart, label, data.PuerRef);
         }
 
-        // Función genérica para actualizar gráficas
         function updateChart(chart, label, value) {
             if (chart.data.labels.length >= maxDataPoints) {
                 chart.data.labels.shift();
                 chart.data.datasets[0].data.shift();
             }
-            
             chart.data.labels.push(label);
             chart.data.datasets[0].data.push(value);
             chart.update();
         }
 
-        // Manejar estado de dispositivos
         socket.on('estado_dispositivo', (data) => {
             const container = document.getElementById('devices-container');
             const deviceId = `device-${data.id}`;
@@ -257,14 +276,13 @@
                 const indicator = deviceCard.querySelector('.status-indicator');
                 const statusText = deviceCard.querySelector('.device-status span');
                 const lastSeen = deviceCard.querySelector('.last-seen');
-                
+
                 indicator.className = `status-indicator ${data.status === 'online' ? 'online' : 'offline'}`;
                 statusText.textContent = data.status === 'online' ? 'Conectado' : 'Desconectado';
                 lastSeen.textContent = `Última conexión: ${new Date(data.lastSeen).toLocaleString()}`;
             }
         });
 
-        // Manejar desconexión del dashboard
         socket.on('disconnect', () => {
             document.getElementById('status').innerHTML = '🔴 Desconectado';
             document.getElementById('status').style.color = '#ff4444';

@@ -157,43 +157,76 @@ aedes.on('clientDisconnect', (client) => {
 aedes.on('publish', async (packet, client) => {
   if (!client || packet.topic.startsWith('$SYS')) return;
 
- // console.log(`\nPaquete MQTT recibido: ${packet.topic}`);
-  //console.log(`Payload: ${packet.payload.toString()}`);
-
   try {
-    const [temperatura, humedad, apiKey] = packet.payload.toString().split(',');
+    // Parsear todos los campos incluyendo fecha y hora desde el dispositivo
+    const [fecha, hora, TempCon, TempRef, TempAmb, HumAmb, EnerCon, PuerCon, PuerRef, apiKey] = 
+      packet.payload.toString().split(',');
     
-    // Validación de datos
-    if (isNaN(temperatura) || isNaN(humedad)) {
-      throw new Error('Datos inválidos');
+    // Validar formato de fecha y hora
+    const fechaValida = /^\d{4}-\d{2}-\d{2}$/.test(fecha);
+    const horaValida = /^\d{2}:\d{2}:\d{2}$/.test(hora);
+    
+    // Validación completa de datos
+    if (!fechaValida || !horaValida ||
+        [TempCon, TempRef, TempAmb, HumAmb, EnerCon].some(isNaN) || 
+        ![0, 1].includes(parseInt(PuerCon)) || 
+        ![0, 1].includes(parseInt(PuerRef))) {
+      throw new Error('Datos inválidos o formato incorrecto');
     }
 
-    // Insertar en base de datos
+    // Insertar en base de datos con fecha y hora desde el dispositivo
     const [result] = await pool.promise().query(
-      `INSERT INTO datos (dispositivo_id, temperatura, humedad)
-       SELECT id, ?, ? FROM dispositivos WHERE api_key = ?`,
-      [parseFloat(temperatura), parseFloat(humedad), apiKey]
+      `INSERT INTO datos (
+        dispositivo_id, 
+        fecha, 
+        hora,
+        TempCon, 
+        TempRef, 
+        TempAmb, 
+        HumAmb, 
+        EnerCon, 
+        PuerCon, 
+        PuerRef
+       )
+       SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ? 
+       FROM dispositivos WHERE api_key = ?`,
+      [
+        fecha,
+        hora,
+        parseFloat(TempCon),
+        parseFloat(TempRef),
+        parseFloat(TempAmb),
+        parseInt(HumAmb),
+        parseFloat(EnerCon),
+        parseInt(PuerCon),
+        parseInt(PuerRef),
+        apiKey
+      ]
     );
 
-    //console.log(`Datos almacenados: ${result.affectedRows} fila(s) afectada(s)`);
+    // Obtener información del dispositivo
+    const [dispositivo] = await pool.promise().query(
+      'SELECT id, nombre, modelo FROM dispositivos WHERE api_key = ?',
+      [apiKey]
+    );
 
-       // Obtener información del dispositivo
-       const [dispositivo] = await pool.promise().query(
-        'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-        [apiKey]
-      );
-  
-      // Enviar a dashboard con ID y nombre del dispositivo
-      if (client.usuarioId && dispositivo.length > 0) {
-       // console.log(`Enviando a usuario-${client.usuarioId}`);
-        io.to(`usuario-${client.usuarioId}`).emit('nuevo_dato', {
-          temperatura: parseFloat(temperatura).toFixed(2),
-          humedad: parseFloat(humedad).toFixed(2),
-          dispositivo_id: dispositivo[0].id,
-          dispositivo_nombre: dispositivo[0].nombre,
-          timestamp: new Date().toISOString()
-        });
-      }
+    // Enviar a dashboard con los datos recibidos
+    if (client.usuarioId && dispositivo.length > 0) {
+      io.to(`usuario-${client.usuarioId}`).emit('nuevo_dato', {
+        dispositivo_id: dispositivo[0].id,
+        dispositivo_nombre: dispositivo[0].nombre,
+        modelo: dispositivo[0].modelo,
+        fecha: fecha,
+        hora: hora,
+        TempCon: parseFloat(TempCon).toFixed(2),
+        TempRef: parseFloat(TempRef).toFixed(2),
+        TempAmb: parseFloat(TempAmb).toFixed(2),
+        HumAmb: parseInt(HumAmb),
+        EnerCon: parseFloat(EnerCon).toFixed(2),
+        PuerCon: parseInt(PuerCon),
+        PuerRef: parseInt(PuerRef)
+      });
+    }
 
   } catch (err) {
     console.error('❌ Error:', err.message);
@@ -283,5 +316,5 @@ mqttServer.listen(1883, () => {
 
 server.listen(3000, () => {
   console.log('Servidor HTTP: http://localhost:3000');
-  console.log('Dashboard: http://localhost:3000/dashboard.html');
+  //console.log('Dashboard: http://localhost:3000/dashboard.html');
 });

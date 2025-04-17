@@ -218,13 +218,13 @@
             container.appendChild(card);
 
             deviceCharts.set(deviceId, {
-                tempConChart: createChart(document.getElementById(`tempCon-${deviceId}`), 'TempCon (°C)', '#ff6384'),
-                tempRefChart: createChart(document.getElementById(`tempRef-${deviceId}`), 'TempRef (°C)', '#ff9f40'),
-                tempAmbChart: createChart(document.getElementById(`tempAmb-${deviceId}`), 'TempAmb (°C)', '#ffcd56'),
-                humAmbChart: createChart(document.getElementById(`humAmb-${deviceId}`), 'HumAmb (%)', '#36a2eb'),
-                enerConChart: createChart(document.getElementById(`enerCon-${deviceId}`), 'EnerCon (kWh)', '#9966ff'),
-                puerConChart: createChart(document.getElementById(`puerCon-${deviceId}`), 'PuerCon', '#4bc0c0'),
-                puerRefChart: createChart(document.getElementById(`puerRef-${deviceId}`), 'PuerRef', '#c9cbcf')
+                tempConChart: createChart(document.getElementById(`tempCon-${deviceId}`), 'Temperatura Congelador (°C)', '#0155ff'),
+                tempRefChart: createChart(document.getElementById(`tempRef-${deviceId}`), 'Temperatura Refrigerador (°C)', '#33daff'),
+                tempAmbChart: createChart(document.getElementById(`tempAmb-${deviceId}`), 'Temperatura Ambiente (°C)', '#ffcd56'),
+                humAmbChart: createChart(document.getElementById(`humAmb-${deviceId}`), 'Humedad ambiente (%)', '#00a966'),
+                enerConChart: createChart(document.getElementById(`enerCon-${deviceId}`), 'Energia Consumida (kWh)', '#ffff00'),
+                puerConChart: createChart(document.getElementById(`puerCon-${deviceId}`), 'Puerta Congelador', '#bdc3c7'),
+                puerRefChart: createChart(document.getElementById(`puerRef-${deviceId}`), 'Puerta Refrigerador', '#8e44ad')
             });
         }
 

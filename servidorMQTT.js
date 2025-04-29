@@ -26,7 +26,10 @@ const pool = mysql.createPool({
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(express.static(path.join(__dirname, 'public/frontend/browser')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/frontend/browser', 'index.html'));
+});
 
 // ================= WEBSOCKET =================
 const server = http.createServer(app);
@@ -36,8 +39,6 @@ const io = socketIo(server, {
     methods: ["GET", "POST"]
   }
 });
-
-
 
 
 // Actualiza la autenticación para guardar el API Key en el cliente

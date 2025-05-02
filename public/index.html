@@ -126,6 +126,89 @@
         }
         .port-active { background: #4CAF50; box-shadow: 0 0 8px #4CAF5050; }
         .port-inactive { background: #ff4444; }
+
+
+        /* CSS */
+        .notificacion {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 350px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateX(120%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        display: block !important;
+        }
+
+        .notificacion.mostrar {
+        opacity: 1;
+        transform: translateX(0);
+        }
+
+        .notificacion-header {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+        }
+
+        .notificacion-icono {
+        font-size: 1.2rem;
+        margin-right: 12px;
+        }
+
+        .notificacion-titulo {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        flex-grow: 1;
+        }
+
+        .notificacion-cerrar {
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        }
+
+        .notificacion-cerrar:hover {
+        opacity: 1;
+        }
+
+        .notificacion-contenido {
+        padding: 16px;
+        }
+
+        .notificacion-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        color: #666;
+        }
+
+        .notificacion-descripcion {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        color: #333;
+        }
+
+        /* Estados */
+        .notificacion.pendiente {
+        border-left: 4px solid #e74c3c;
+        }
+
+        .notificacion.atendido {
+        border-left: 4px solid #2ecc71;
+        }
     </style>
 </head>
 <body>
@@ -138,10 +221,33 @@
 
     <div class="grid" id="charts-container"></div>
 
+<div id="alarma-notificacion" class="notificacion" aria-live="polite" role="status">
+    <div class="notificacion-header">
+      <span class="notificacion-icono">🔔</span>
+      <h3 class="notificacion-titulo" id="alarma-tipo"></h3>
+      <button class="notificacion-cerrar" onclick="cerrarAlarma()" aria-label="Cerrar notificación">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor">
+          <path d="M13 1L1 13M1 1L13 13" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="notificacion-contenido">
+      <div class="notificacion-meta">
+        <span id="alarma-fecha-hora" class="notificacion-fecha"></span>
+        <span id="alarma-dispositivo" class="notificacion-dispositivo"></span>
+      </div>
+      <p id="alarma-descripcion" class="notificacion-descripcion"></p>
+    </div>
+  </div>
+
     <script>
         const socket = io('https://www.proyectoaxo.site');
         const maxDataPoints = 15;
         const deviceCharts = new Map();
+
+        
+        
+
 
         const chartOptions = {
             responsive: true,
@@ -223,8 +329,8 @@
                 tempAmbChart: createChart(document.getElementById(`tempAmb-${deviceId}`), 'Temperatura Ambiente (°C)', '#ffcd56'),
                 humAmbChart: createChart(document.getElementById(`humAmb-${deviceId}`), 'Humedad ambiente (%)', '#00a966'),
                 enerConChart: createChart(document.getElementById(`enerCon-${deviceId}`), 'Energia Consumida (kWh)', '#ffff00'),
-                puerConChart: createChart(document.getElementById(`puerCon-${deviceId}`), 'Puerta Congelador', '#bdc3c7'),
-                puerRefChart: createChart(document.getElementById(`puerRef-${deviceId}`), 'Puerta Refrigerador', '#8e44ad')
+                puerConChart: createChart(document.getElementById(`puerCon-${deviceId}`), 'Puerta Congelador', '#4bc0c0'),
+                puerRefChart: createChart(document.getElementById(`puerRef-${deviceId}`), 'Puerta Refrigerador', '#c9cbcf')
             });
         }
 
@@ -287,6 +393,46 @@
             document.getElementById('status').innerHTML = '🔴 Desconectado';
             document.getElementById('status').style.color = '#ff4444';
         });
+
+
+        /*Alarma Funcionalidad*/
+        let timeoutAlarma;
+
+        socket.on('alarma_puerta', data => {
+        const cont = document.getElementById('alarma-notificacion');
+        
+        // Actualizar contenido
+        document.getElementById('alarma-tipo').textContent = data.tipo;
+        document.getElementById('alarma-fecha-hora').textContent = `${data.fecha} ${data.hora}`;
+        document.getElementById('alarma-dispositivo').textContent = `Dispositivo: ${data.dispositivo_nombre}`;
+        document.getElementById('alarma-descripcion').textContent = data.descripcion;
+
+        // Actualizar estado
+        cont.classList.remove('pendiente', 'atendido');
+        cont.classList.add(data.estado.toLowerCase());
+        
+        // Mostrar con animación
+        requestAnimationFrame(() => {
+            cont.classList.add('mostrar');
+        });
+
+        // Auto-ocultar después de 8 segundos si es Pendiente
+        if(data.estado === 'Pendiente') {
+            clearTimeout(timeoutAlarma);
+            timeoutAlarma = setTimeout(cerrarAlarma, 8000);
+        }
+        });
+
+        function cerrarAlarma() {
+        const cont = document.getElementById('alarma-notificacion');
+        cont.classList.remove('mostrar');
+        
+        // Esperar a que termine la animación para ocultar completamente
+        setTimeout(() => {
+            cont.classList.remove('pendiente', 'atendido');
+        }, 300);
+        }
+
     </script>
 </body>
 </html>

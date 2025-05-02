@@ -158,7 +158,67 @@ aedes.on('clientDisconnect', (client) => {
 aedes.on('publish', async (packet, client) => {
   if (!client || packet.topic.startsWith('$SYS')) return;
 
+
+    //Manejo de alarmas
   try {
+    if (packet.topic === 'alarma/puerta') {
+      try {
+        const payload = packet.payload.toString();
+        const dato = JSON.parse(payload);
+  
+        const {
+          fecha,
+          hora,
+          tipo,
+          descripcion,
+          origen,
+          estado,
+          apiKey
+        } = dato;
+  
+        // 1) Obtener dispositivo
+        const [[disp]] = await pool.promise().query(
+          `SELECT id, nombre FROM dispositivos WHERE api_key = ?`,
+          [apiKey]
+        );
+        if (!disp) throw new Error('Dispositivo no encontrado');
+  
+        // 2) Insertar en tabla alarmas
+        await pool.promise().query(
+          `INSERT INTO alarmas
+           (dispositivo_id, fecha, hora, tipo, descripcion, origen, estado)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            disp.id,
+            fecha,
+            hora,
+            tipo,
+            descripcion,
+            origen,
+            estado
+          ]
+        );
+  
+        // 3) Emitir a la web
+        if (client.usuarioId) {
+          io.to(`usuario-${client.usuarioId}`).emit('alarma_puerta', {
+            tipo,
+            fecha,
+            hora,
+            dispositivo_nombre: disp.nombre,
+            descripcion,
+            estado
+          });
+        }
+      } catch (err) {
+        console.error('❌ Error al procesar alarma:', err.message);
+        console.log(payload);
+      }
+      return;
+    
+    }
+
+
     // Parsear todos los campos incluyendo fecha y hora desde el dispositivo
     const [fecha, hora, TempCon, TempRef, TempAmb, HumAmb, EnerCon, PuerCon, PuerRef, apiKey] = 
       packet.payload.toString().split(',');

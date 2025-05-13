@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Estadísticas Históricas - Dashboard IoT</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/socket.io/socket.io.js"></script>
@@ -157,14 +157,14 @@
             selectDevice.append(opt);
           });
           const online = list.find(d => d.status === 'online');
-          selectDevice.value = (online || list[0]).id;
+          selectDevice.value = (online || list[0])?.id || '';
         });
     });
 
     btnCargar.addEventListener('click', () => {
       const deviceId = selectDevice.value;
       const intervalo = selectInterval.value;
-      fetch(/api/estadisticas?deviceId=${deviceId}&intervalo=${intervalo})
+      fetch(`/api/estadisticas?deviceId=${deviceId}&intervalo=${intervalo}`)
         .then(r => r.json())
         .then(datos => {
           renderCharts(datos, intervalo);
@@ -179,7 +179,7 @@
       if (intervalo === '8h') {
         return datos.map(r => {
           const [hora, minutos] = r.hora_bloque.split(':');
-          return ${hora}:${minutos};
+          return `${hora}:${minutos}`;
         });
       } else {
         const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -219,7 +219,7 @@
           </div>`;
         chartsCont.append(card);
 
-        const ctx = document.getElementById(chart-${m.key});
+        const ctx = document.getElementById(`chart-${m.key}`);
         new Chart(ctx, {
           type: 'line',
           data: {

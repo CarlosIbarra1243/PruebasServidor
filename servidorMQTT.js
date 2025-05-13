@@ -322,6 +322,23 @@ app.post('/api/dispositivos', (req, res) => {
   );
 });
 
+// ==================== Obtener estadísticas =========================
+app.get('/api/estadisticas', async (req, res) => {
+  try {
+    const deviceId = parseInt(req.query.deviceId, 10);
+    const intervalo = req.query.intervalo;
+    let callSql;
+    if (intervalo === '8h') callSql = 'CALL obtener_ultimas_8_horas(?)';
+    else if (intervalo === '7d') callSql = 'CALL ultimaSemana(?)';
+    else return res.status(400).json({ error: 'Intervalo no válido' });
+    const [resultSets] = await pool.promise().query(callSql, [deviceId]);
+    const data = Array.isArray(resultSets[0]) ? resultSets[0] : resultSets;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
 
 // ================= WEBSOCKET EVENTS =================
 io.on('connection', (socket) => {

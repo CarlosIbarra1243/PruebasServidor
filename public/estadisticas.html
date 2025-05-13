@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Estadísticas Históricas - Dashboard IoT</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/socket.io/socket.io.js"></script>
@@ -24,7 +24,7 @@
       background: #2d2d2d;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       min-height: 350px;
     }
     h2 {
@@ -58,8 +58,7 @@
       flex-direction: column;
       font-size: 0.9em;
     }
-    .controls select,
-    .controls button {
+    .controls select, .controls button {
       margin-top: 5px;
       padding: 6px 10px;
       border-radius: 4px;
@@ -110,17 +109,13 @@
 
   <script>
     const socket = io('https://www.proyectoaxo.site');
-    const selectDevice = document.getElementById('select-device');
+    const selectDevice   = document.getElementById('select-device');
     const selectInterval = document.getElementById('select-interval');
-    const btnCargar = document.getElementById('btn-cargar');
-    const chartsCont = document.getElementById('charts-container');
+    const btnCargar      = document.getElementById('btn-cargar');
+    const chartsCont     = document.getElementById('charts-container');
     let dispositivos = [];
 
-    const colores = [
-      '#4caf50', '#ff9800', '#03a9f4',
-      '#e91e63', '#9c27b0', '#f44336', '#00bcd4'
-    ];
-
+    // Chart.js common options
     const chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -145,6 +140,7 @@
       }
     };
 
+    // Al conectar, nos suscribimos y pedimos lista de dispositivos
     socket.on('connect', () => {
       socket.emit('subscribe', 1);
       fetch('/api/dispositivos?usuarioId=1')
@@ -157,50 +153,35 @@
             opt.textContent = d.nombre;
             selectDevice.append(opt);
           });
+          // Preseleccionar uno online o el primero
           const online = list.find(d => d.status === 'online');
           selectDevice.value = (online || list[0]).id;
+        })
+        .catch(() => {
+          // Si falla, igual dejar listado vacío
         });
     });
 
+    // Al pulsar "Cargar"
     btnCargar.addEventListener('click', () => {
       const deviceId = selectDevice.value;
       const intervalo = selectInterval.value;
       fetch(`/api/estadisticas?deviceId=${deviceId}&intervalo=${intervalo}`)
-        .then(r => {
-          if (!r.ok) throw new Error(`Error HTTP: ${r.status}`);
-          return r.json();
-        })
-        .then(datos => {
-          renderCharts(datos, intervalo);
-        })
+        .then(r => r.json())
+        .then(datos => renderCharts(datos))
         .catch(err => {
           chartsCont.innerHTML = '<p>Error al cargar datos.</p>';
           console.error(err);
         });
     });
 
-    function formatLabels(datos, intervalo) {
-      if (intervalo === '8h') {
-        return datos.map(r => {
-          const [hora, minutos] = r.hora_bloque.split(':');
-          return `${hora}:${minutos}`;
-        });
-      } else {
-        const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-        return datos.map(r => {
-          const fecha = new Date(r.dia);
-          return dias[fecha.getDay()];
-        });
-      }
-    }
-
-    function renderCharts(datos, intervalo) {
+    // Dibuja las gráficas en Chart.js
+    function renderCharts(datos) {
       chartsCont.innerHTML = '';
       if (!datos || datos.length === 0) {
         chartsCont.textContent = 'No hay datos para este intervalo.';
         return;
       }
-
       const metrics = [
         { key: 'avg_TempCon', label: 'Temp. Congelador (°C)' },
         { key: 'avg_TempRef', label: 'Temp. Refrigerador (°C)' },
@@ -210,10 +191,10 @@
         { key: 'count_aperturas_con', label: 'Aperturas Cong.' },
         { key: 'count_aperturas_ref', label: 'Aperturas Ref.' }
       ];
+      // Etiquetas (horario o día)
+      const labels = datos.map(r => r.hora_bloque || r.dia);
 
-      const labels = formatLabels(datos, intervalo);
-
-      metrics.forEach((m, idx) => {
+      metrics.forEach(m => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -231,8 +212,6 @@
             datasets: [{
               label: m.label,
               data: datos.map(r => r[m.key]),
-              borderColor: colores[idx % colores.length],
-              backgroundColor: colores[idx % colores.length],
               fill: false,
               tension: 0.4
             }]

@@ -322,6 +322,26 @@ app.post('/api/dispositivos', (req, res) => {
   );
 });
 
+// Listar dispositivos de un usuario
+app.get('/api/dispositivos', async (req, res) => {
+  const usuarioId = parseInt(req.query.usuarioId, 10);
+  if (!usuarioId) return res.status(400).json({ error: 'usuarioId requerido' });
+  try {
+    const [rows] = await pool.promise().query(
+      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
+      [usuarioId]
+    );
+    const result = rows.map(d => ({
+      id: d.id,
+      nombre: d.nombre,
+      status: deviceStatus.get(d.id) || 'offline'
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==================== Obtener estadísticas =========================
 app.get('/api/estadisticas', async (req, res) => {
   try {

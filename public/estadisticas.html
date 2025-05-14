@@ -166,7 +166,7 @@
     btnCargar.addEventListener('click', () => {
       const deviceId = selectDevice.value;
       const intervalo = selectInterval.value;
-      fetch(`/as?deviceId=${deviceId}&intervalo=${intervalo}`)
+      fetch(`/api/estadisticas?deviceId=${deviceId}&intervalo=${intervalo}`)
         .then(r => r.json())
         .then(datos => renderCharts(datos))
         .catch(err => {

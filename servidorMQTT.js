@@ -12,6 +12,8 @@ const connectionTimeouts = new Map();
 
 const deviceStatus = new Map();
 
+const app = express();
+
 // ================= CONFIGURACIÓN MYSQL =================
 const pool = mysql.createPool({
   host: 'localhost',
@@ -22,8 +24,71 @@ const pool = mysql.createPool({
   connectionLimit: 10
 });
 
+// ================= API REST =================
+app.post('/api/registro', (req, res) => {
+  const { email, password } = req.body;
+  pool.query(
+    'INSERT INTO usuarios (email, password) VALUES (?, ?)',
+    [email, password],
+    (err, result) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id: result.insertId });
+    }
+  );
+});
+
+app.post('/api/dispositivos', (req, res) => {
+  const { nombre, usuarioId } = req.body;
+  const apiKey = crypto.randomUUID();
+  
+  pool.query(
+    'INSERT INTO dispositivos (nombre, usuario_id, api_key) VALUES (?, ?, ?)',
+    [nombre, usuarioId, apiKey],
+    (err, result) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ apiKey });
+    }
+  );
+});
+
+// Listar dispositivos de un usuario
+app.get('/api/dispositivos', async (req, res) => {
+  const usuarioId = parseInt(req.query.usuarioId, 10);
+  if (!usuarioId) return res.status(400).json({ error: 'usuarioId requerido' });
+  try {
+    const [rows] = await pool.promise().query(
+      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
+      [usuarioId]
+    );
+    const result = rows.map(d => ({
+      id: d.id,
+      nombre: d.nombre,
+      status: deviceStatus.get(d.id) || 'offline'
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==================== Obtener estadísticas =========================
+app.get('/api/estadisticas', async (req, res) => {
+  try {
+    const deviceId = parseInt(req.query.deviceId, 10);
+    const intervalo = req.query.intervalo;
+    let callSql;
+    if (intervalo === '8h') callSql = 'CALL obtener_ultimas_8_horas(?)';
+    else if (intervalo === '7d') callSql = 'CALL ultimaSemana(?)';
+    else return res.status(400).json({ error: 'Intervalo no válido' });
+    const [resultSets] = await pool.promise().query(callSql, [deviceId]);
+    const data = Array.isArray(resultSets[0]) ? resultSets[0] : resultSets;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
 // ================= CONFIGURACIÓN EXPRESS =================
-const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/frontend/browser')));
@@ -295,69 +360,7 @@ aedes.on('publish', async (packet, client) => {
   }
 });
 
-// ================= API REST =================
-app.post('/api/registro', (req, res) => {
-  const { email, password } = req.body;
-  pool.query(
-    'INSERT INTO usuarios (email, password) VALUES (?, ?)',
-    [email, password],
-    (err, result) => {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ id: result.insertId });
-    }
-  );
-});
 
-app.post('/api/dispositivos', (req, res) => {
-  const { nombre, usuarioId } = req.body;
-  const apiKey = crypto.randomUUID();
-  
-  pool.query(
-    'INSERT INTO dispositivos (nombre, usuario_id, api_key) VALUES (?, ?, ?)',
-    [nombre, usuarioId, apiKey],
-    (err, result) => {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ apiKey });
-    }
-  );
-});
-
-// Listar dispositivos de un usuario
-app.get('/api/dispositivos', async (req, res) => {
-  const usuarioId = parseInt(req.query.usuarioId, 10);
-  if (!usuarioId) return res.status(400).json({ error: 'usuarioId requerido' });
-  try {
-    const [rows] = await pool.promise().query(
-      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
-      [usuarioId]
-    );
-    const result = rows.map(d => ({
-      id: d.id,
-      nombre: d.nombre,
-      status: deviceStatus.get(d.id) || 'offline'
-    }));
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ==================== Obtener estadísticas =========================
-app.get('/api/estadisticas', async (req, res) => {
-  try {
-    const deviceId = parseInt(req.query.deviceId, 10);
-    const intervalo = req.query.intervalo;
-    let callSql;
-    if (intervalo === '8h') callSql = 'CALL obtener_ultimas_8_horas(?)';
-    else if (intervalo === '7d') callSql = 'CALL ultimaSemana(?)';
-    else return res.status(400).json({ error: 'Intervalo no válido' });
-    const [resultSets] = await pool.promise().query(callSql, [deviceId]);
-    const data = Array.isArray(resultSets[0]) ? resultSets[0] : resultSets;
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Error interno' });
-  }
-});
 
 
 // ================= WEBSOCKET EVENTS =================

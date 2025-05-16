@@ -5,13 +5,21 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const crypto = require('crypto');
-const pool = require('./db');
 
 const connectionTimeouts = new Map();
 
 const deviceStatus = new Map();
 
 const app = express();
+
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: 'Carlos1243',
+  database: 'iot_db',
+  waitForConnections: true,
+  connectionLimit: 10
+});
 
 // ================= API REST =================
 app.post('/api/registro', (req, res) => {

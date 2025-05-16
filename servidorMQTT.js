@@ -5,6 +5,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const crypto = require('crypto');
+const mysql = require('mysql2');
 
 const connectionTimeouts = new Map();
 

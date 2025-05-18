@@ -1,0 +1,56 @@
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const pool = require('../db');
+const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_ultrasecreta_xd'
+
+// Registro de usuario
+router.post('/register', async (req, res) => {
+    try {
+        const { email, fechaNacimiento, genero, nombre, password, rol, telefono} = req.body;
+        if (!email || !password || !nombre || !fechaNacimiento || !genero || !telefono || !rol) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
+        
+        if (![1, 2].includes(parseInt(rol))) {
+            return res.status(400).json({ error: 'Rol inválido' });
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const [result] = await pool.query(
+            'INSERT INTO usuarios (nombre, email, password, telefono, fechaNacimiento, genero, rol) VALUES (?,?,?,?,?,?,?)', [nombre, email, hashedPassword, telefono, fechaNacimiento, genero, rol]
+        );
+        res.status(201).json({ id: result.insertId, message: 'Usuario registrado' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al registrar usuario' });
+    }
+});
+
+// Inicio de sesión
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
+        const [users] = await pool.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+        if (users.length === 0) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+        const passMatch = await bcrypt.compare(password, user.password);
+        if (!passMatch) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+        const token = jwt.sign({ id: user.id, rol: user.rol }, JWT_SECRET, { expiresIn: '1h'});
+        res.json({ token, rol: user.rol});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al iniciar sesión' });
+    }
+});
+
+module.exports = router;

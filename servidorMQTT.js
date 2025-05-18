@@ -7,6 +7,9 @@ const path = require('path');
 const crypto = require('crypto');
 const pool = require('./db');
 
+
+const authRoutes = require('./routes/auth');
+
 const connectionTimeouts = new Map();
 
 const deviceStatus = new Map();
@@ -79,6 +82,7 @@ app.get('/api/estadisticas', async (req, res) => {
 
 // ================= CONFIGURACIÓN EXPRESS =================
 app.use(express.json());
+app.use('/auth', authRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/frontend/browser')));
 app.get('*', (req, res) => {

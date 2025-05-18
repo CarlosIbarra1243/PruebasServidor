@@ -1,68 +1,124 @@
-<a routerLink="/home" class="home-button">Regresar</a>
+<div class="auth-container">
+      <mat-card class="auth-card">
+        <mat-tab-group mat-align-tabs="center" [(selectedIndex)]="selectedTabIndex">
+          <mat-tab label="Login">
+            <div class="form-content">
+              <h2>Bienvenido</h2>
+              @if (selectedTabIndex === 0) {
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit('login')">
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>email</mat-icon>
+                    <input matInput formControlName="email" type="email" placeholder="Correo electrónico" required>
+                    <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                    <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+                      Formato de correo inválido
+                    </mat-error>
+                  </mat-form-field>
 
-<div class="main-container">
-  <div class="auth-container">
-    <h2>{{ isLoginMode ? 'Iniciar Sesión' : 'Registrarse' }}</h2>
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>lock</mat-icon>
+                    <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'"  placeholder="Contraseña">
+                    <mat-icon matSuffix (click)="hidePassword = !hidePassword">
+                      {{ hidePassword ? 'visibility_off' : 'visibility' }}
+                    </mat-icon>
+                    <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                  </mat-form-field>
 
-    @if (errorMessage) {
-      <div class="error">{{ errorMessage }}</div>
-    }
+                  <div class="form-options">
+                    <mat-checkbox>Recuérdame</mat-checkbox>
+                    <a routerLink="/forgot-password">¿Olvidó su contraseña?</a>
+                  </div>
 
-    <form [formGroup]="isLoginMode ? loginForm : registerForm" (ngSubmit)="onSubmit()" novalidate>
-      <!-- Campo: Correo -->
-      <div class="form-group">
-        <label for="email">Correo Electrónico</label>
-        <input id="email" type="email" formControlName="email" placeholder="correo@ejemplo.com" autocomplete="email" />
-        <div class="form-error" *ngIf="(isLoginMode ? loginForm : registerForm).controls.email.invalid && (isLoginMode ? loginForm : registerForm).controls.email.touched">
-          <small *ngIf="(isLoginMode ? loginForm : registerForm).controls.email.errors?.['required']">
-            El correo es obligatorio.
-          </small>
-          <small *ngIf="(isLoginMode ? loginForm : registerForm).controls.email.errors?.['email']">
-            El correo no tiene un formato válido.
-          </small>
-        </div>
-      </div>
+                  <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">
+                    Ingresar
+                  </button>
+                </form>
+              }
+            </div>
+          </mat-tab>
 
-      <!-- Campo: Contraseña -->
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input id="password" type="password" formControlName="password" placeholder="Contraseña" autocomplete="current-password" />
-        <div class="form-error" *ngIf="(isLoginMode ? loginForm : registerForm).controls.password.invalid && (isLoginMode ? loginForm : registerForm).controls.password.touched">
-          <small *ngIf="(isLoginMode ? loginForm : registerForm).controls.password.errors?.['required']">
-            La contraseña es obligatoria.
-          </small>
-          <small *ngIf="(isLoginMode ? loginForm : registerForm).controls.password.errors?.['minlength']">
-            La contraseña debe tener al menos 8 caracteres.
-          </small>
-        </div>
-      </div>
+          <mat-tab label="Registro">
+            <div class="form-content">
+              <h2>Crea tu cuenta</h2>
+              @if (selectedTabIndex === 1) {
+                <form [formGroup]="registerForm" (ngSubmit)="onSubmit('register')">
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>person</mat-icon>
+                    <input matInput formControlName="nombre" placeholder="Nombre Completo" required>
+                    <mat-error *ngIf="registerForm.get('nombre')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                  </mat-form-field>
 
-      <!-- Campo: Confirmar contraseña (solo en registro) -->
-      @if (!isLoginMode) {
-        <div class="form-group">
-          <label for="confirmPassword">Confirmar Contraseña</label>
-          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Confirma tu contraseña" autocomplete="new-password" />
-          <div class="form-error" *ngIf="registerForm.controls.confirmPassword.invalid && registerForm.controls.confirmPassword.touched">
-            <small *ngIf="registerForm.controls.confirmPassword.errors?.['required']">
-              Este campo es obligatorio.
-            </small>
-          </div>
-          <div class="form-error" *ngIf="registerForm.errors?.['mismatch'] && registerForm.touched">
-            <small>Las contraseñas no coinciden.</small>
-          </div>
-        </div>
-      }
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>email</mat-icon>
+                    <input matInput formControlName="email" type="email" placeholder="Correo electrónico" required>
+                    <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                    <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+                      Formato de correo inválido
+                    </mat-error>
+                  </mat-form-field>
 
-      <button type="submit">
-        {{ isLoginMode ? 'Iniciar Sesión' : 'Registrarse' }}
-      </button>
-    </form>
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>phone</mat-icon>
+                    <input matInput formControlName="telefono" type="tel" placeholder="Teléfono" required>
+                    <mat-error *ngIf="registerForm.get('telefono')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                    <mat-error *ngIf="registerForm.get('telefono')?.hasError('pattern')">
+                      Teléfono inválido (10 dígitos)
+                    </mat-error>
+                  </mat-form-field>
 
-    <p>
-      {{ isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
-      <a (click)="toggleMode()" class="toggle-link">
-        {{ isLoginMode ? 'Regístrate aquí' : 'Inicia sesión aquí' }}
-      </a>
-    </p>
-  </div>
-</div>
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>calendar_today</mat-icon>
+                    <input matInput [matDatepicker]="picker" formControlName="fechaNacimiento" placeholder="Fecha de nacimiento">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="registerForm.get('fechaNacimiento')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>people</mat-icon>
+                    <mat-select formControlName="genero" placeholder="Género" required>
+                      <mat-option value="Masculino">Masculino</mat-option>
+                      <mat-option value="Femenino">Femenino</mat-option>
+                      <mat-option value="Otro">Otro</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="registerForm.get('genero')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-icon matPrefix>lock</mat-icon>
+                    <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" placeholder="Contraseña" required>
+                    <mat-icon matSuffix (click)="hidePassword = !hidePassword">
+                      {{ hidePassword ? 'visibility_off' : 'visibility' }}
+                    </mat-icon>
+                    <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+                      Campo obligatorio
+                    </mat-error>
+                    <mat-error *ngIf="registerForm.get('password')?.hasError('pattern')">
+                      Debe incluir mayúscula, minúscula, número y caracter especial.
+                    </mat-error>
+                  </mat-form-field>
+
+                  <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
+                    Registrar
+                  </button>
+                </form>
+              }
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card>
+    </div>

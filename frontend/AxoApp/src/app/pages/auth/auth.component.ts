@@ -3,118 +3,105 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
 
-interface RegisterForm {
-  email: FormControl<string>;
-  password: FormControl<string>;
-  confirmPassword: FormControl<string>;
-}
-
-interface LoginForm {
-  email: FormControl<string>;
-  password: FormControl<string>;
-}
 
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    RouterModule, 
+    MatTabsModule, 
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSnackBarModule,
+    MatCardModule
+  ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.css'
 })
 export class AuthComponent {
-  loginForm: FormGroup<LoginForm>;
-  registerForm: FormGroup<RegisterForm>;
-  isLoginMode = true;
-  errorMessage: string | null = null;
+  loginForm: FormGroup;
+  registerForm: FormGroup;
+  selectedTabIndex = 0;
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
-    this.loginForm = this.createLoginForm();
-    this.registerForm = this.createRegisterForm();
-  }
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+    });
 
-  private createLoginForm(): FormGroup<LoginForm> {
-    return this.fb.group<LoginForm>({
-      email: this.fb.control('', {
-        validators: [Validators.required, Validators.email],
-        nonNullable: true
-      }),
-      password: this.fb.control('', {
-        validators: [Validators.required, Validators.minLength(8)],
-        nonNullable: true
-      })
+    this.registerForm = this.fb.group({
+      nombre: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      fechaNacimiento: ['', Validators.required],
+      genero: ['', Validators.required],
+      password: ['', [
+        Validators.required,
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+      ]],
     });
   }
 
-  private createRegisterForm(): FormGroup<RegisterForm> {
-    return this.fb.group<RegisterForm>({
-      email: this.fb.control('', {
-        validators: [Validators.required, Validators.email],
-        nonNullable: true
-      }),
-      password: this.fb.control('', {
-        validators: [Validators.required, Validators.minLength(8)],
-        nonNullable: true
-      }),
-      confirmPassword: this.fb.control('', {
-        validators: [Validators.required],
-        nonNullable: true
-      })
-    }, { validators: this.passwordMatchValidator });
-  }
-
-  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password')?.value;
-    const confirm = control.get('confirmPassword')?.value;
-    return password === confirm ? null : { mismatch: true };
-  }
-
-  toggleMode(): void {
-    this.isLoginMode = !this.isLoginMode;
-    this.errorMessage = null;
-
-    this.loginForm.reset();
-    this.registerForm.reset();
-
-  // Marcar todos los controles como pristine para evitar errores visibles
-    Object.values(this.loginForm.controls).forEach(control => control.markAsPristine());
-    Object.values(this.registerForm.controls).forEach(control => control.markAsPristine());
-  }
-
-  onSubmit(): void {
-    const form = this.isLoginMode ? this.loginForm : this.registerForm;
-
-    if (form.invalid) {
-      form.markAllAsTouched();
-      return;
+  onSubmit(type: 'login' | 'register') {
+    if (type === 'login' && this.loginForm.valid) {
+      console.log(this.loginForm.value);
+      this.authService.login(this.loginForm.value).subscribe({
+        next: () => {
+          const rol = this.authService.getRol();
+          if (rol === 1) {
+            this.router.navigate(['/users/dashboard']);
+          } else if (rol === 2) {
+            this.router.navigate(['/admin/dashboard']);
+          }
+        },
+        error: (err) => this.snackBar.open('Login failed', 'Close', { duration: 3000 }),
+      });
+    } else if (type === 'register' && this.registerForm.valid) {
+      const user = this.registerForm.value;
+      user.rol = 1; // Por defecto, rol de usuario común
+      user.fechaNacimiento = this.dateFormat(user.fechaNacimiento);
+      console.log(this.registerForm.value);
+      this.authService.register(user).subscribe({
+        next: () => {
+          this.snackBar.open('Registration successful! Please log in.', 'Close', { duration: 3000 });
+          this.selectedTabIndex = 0;
+        },
+        error: (err) => this.snackBar.open('Registration failed', 'Close', { duration: 3000 }),
+      });
     }
+  }
 
-    const { email, password } = form.getRawValue();
-    console.log(form.getRawValue());
-    console.log(email);
-    console.log(password);
+  private dateFormat(date: Date) : String {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
-    const auth$ = this.isLoginMode
-      ? this.authService.login({ email, password })
-      : this.authService.register({ email, password });
-
-    auth$.subscribe({
-      next: () => {
-        if (this.isLoginMode) {
-          this.router.navigate(['/admin']);
-        } else {
-          this.isLoginMode = true;
-          this.errorMessage = '¡Registro exitoso! Por favor, inicia sesión.';
-          this.registerForm.reset();
-        }
-      },
-      error: (err) => {
-        this.errorMessage = err?.error?.message || 'Error en el proceso de autenticación.';
-      }
-    });
+    return `${year}-${month}-${day}`;
   }
 }

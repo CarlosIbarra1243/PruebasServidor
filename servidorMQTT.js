@@ -5,16 +5,19 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const pool = require('./db');
-
 
 const authRoutes = require('./routes/auth');
 
 const connectionTimeouts = new Map();
-
 const deviceStatus = new Map();
 
 const app = express();
+
+app.use(express.json());
+
+
 
 // ================= API REST =================
 app.post('/api/registro', (req, res) => {
@@ -80,11 +83,26 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
+// Middleware para verificar JWT
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers && req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Token inválido' });
+    req.user = decoded;
+    next();
+  });
+};
+
 // ================= CONFIGURACIÓN EXPRESS =================
-app.use(express.json());
 app.use('/auth', authRoutes);
+app.use('/api/user', authenticateToken, authRoutes);
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/frontend/browser')));
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/frontend/browser', 'index.html'));
 });

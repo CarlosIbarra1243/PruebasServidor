@@ -20,8 +20,8 @@ router.post('/register', async (req, res) => {
 
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const [result] = await pool.query(
-            'INSERT INTO usuarios (nombre, email, password, telefono, fechaNacimiento, genero, rol) VALUES (?,?,?,?,?,?,?)', [nombre, email, hashedPassword, telefono, fechaNacimiento, genero, rol]
+        const [result] = await pool.promise().query(
+            'INSERT INTO usuarios (nombre, email, password, telefono, fecha_nacimiento, genero, rol) VALUES (?,?,?,?,?,?,?)', [nombre, email, hashedPassword, telefono, fechaNacimiento, genero, rol]
         );
         res.status(201).json({ id: result.insertId, message: 'Usuario registrado' });
     } catch (error) {
@@ -37,10 +37,13 @@ router.post('/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ error: 'Faltan datos requeridos' });
         }
-        const [users] = await pool.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+        const [users] = await pool.promise().query('SELECT * FROM usuarios WHERE email = ?', [email]);
         if (users.length === 0) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
+        const user = users[0];
+
+        // Verificación de contraseña ingresada
         const passMatch = await bcrypt.compare(password, user.password);
         if (!passMatch) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -50,6 +53,24 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al iniciar sesión' });
+    }
+});
+
+// Obtención de datos del usuario
+router.get('/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        if (req.user.id !== parseInt(userId)){
+            return res.status(403).json({ error: 'Acceso no autorizado al usuario' });
+        }
+        const [users] = await pool.promise().query('SELECT id, nombre, email, telefono, fecha_nacimiento, genero, rol FROM usuarios WHERE id = ?', [userId]);
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.json(users[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener datos del usuario' });
     }
 });
 

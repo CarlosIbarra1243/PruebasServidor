@@ -1,0 +1,20 @@
+<div class="home">
+      <h2>Bienvenido al Panel de Clientes</h2>
+      <p>Aquí puedes ver tus datos y realizar acciones como cliente.</p>
+      <hr>
+      <h3>Información de usuario</h3>
+      <p>ID de usuario: {{ userId }}</p>
+      @if (userData){
+            <h4>Datos:</h4>
+            <p>Id: {{userData.id}}</p>
+            <p>Nombre completo: {{userData.nombre}}</p>
+            <p>Correo electrónico: {{userData.email}}</p>
+            <p>Teléfono: {{userData.telefono}}</p>
+            <p>Fecha de nacimiento: {{userData.fecha_nacimiento}}</p>
+            <p>Género: {{userData.genero | titlecase}}</p>
+            <p>Rol: {{userData.rol === 1 ? 'Usuario' : 'Administrador'}}</p>
+      }
+      <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
+      <hr>
+      <button (click)="logout()">Cerrar Sesión</button>
+</div>

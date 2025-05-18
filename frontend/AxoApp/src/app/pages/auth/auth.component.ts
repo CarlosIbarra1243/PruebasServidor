@@ -75,12 +75,12 @@ export class AuthComponent {
         next: () => {
           const rol = this.authService.getRol();
           if (rol === 1) {
-            this.router.navigate(['/users/dashboard']);
+            this.router.navigate(['/users/home']);
           } else if (rol === 2) {
-            this.router.navigate(['/admin/dashboard']);
+            this.router.navigate(['/admin/home']);
           }
         },
-        error: (err) => this.snackBar.open('Login failed', 'Close', { duration: 3000 }),
+        error: (err) => this.snackBar.open('Fallo en inicio de sesión. Por favor, intente nuevamente', 'Cerrar', { duration: 5000 }),
       });
     } else if (type === 'register' && this.registerForm.valid) {
       const user = this.registerForm.value;
@@ -89,16 +89,16 @@ export class AuthComponent {
       console.log(this.registerForm.value);
       this.authService.register(user).subscribe({
         next: () => {
-          this.snackBar.open('Registration successful! Please log in.', 'Close', { duration: 3000 });
+          this.snackBar.open('¡Registro exitoso! Por favor, inicie sesión.', 'Cerrar', { duration: 5000 });
           this.selectedTabIndex = 0;
         },
-        error: (err) => this.snackBar.open('Registration failed', 'Close', { duration: 3000 }),
+        error: (err) => this.snackBar.open('Fallo en el registro', 'Cerrar', { duration: 5000 }),
       });
     }
   }
 
   private dateFormat(date: Date) : String {
-    const year = date.getFullYear();
+    const year = date.getFullYear;
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
 

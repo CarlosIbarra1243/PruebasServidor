@@ -1,0 +1,20 @@
+<div class="home">
+  <h2>Bienvenido al Panel de Administradores</h2>
+  <p>Aquí puedes gestionar usuarios y configuraciones del sistema.</p>
+  <hr>
+  <h3>Información de usuario</h3>
+  <p>ID de usuario: {{ userId }}</p>
+  @if (userData){
+    <h4>Datos:</h4>
+    <p>Id: {{userData.id}}</p>
+    <p>Nombre completo: {{userData.nombre}}</p>
+    <p>Correo electrónico: {{userData.email}}</p>
+    <p>Teléfono: {{userData.telefono}}</p>
+    <p>Fecha de nacimiento: {{userData.fecha_nacimiento | date}}</p>
+    <p>Género: {{userData.genero | titlecase}}</p>
+    <p>Rol: {{userData.rol === 1 ? 'Usuario' : 'Administrador'}}</p>
+  }
+  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
+  <hr>
+  <button (click)="logout()">Cerrar Sesión</button>
+</div>

@@ -60,7 +60,7 @@ getUserId(): number | null {
 getUserData(): Observable<any> {
     const userId = this.getUserId();
     if (userId) {
-      return this.http.get(`http://localhost:3000/api/user/${userId}`, { headers: this.getHeaders() });
+      return this.http.get(`/api/user/${userId}`, { headers: this.getHeaders() });
     }
     return new Observable(observer => {
       observer.error(new Error('ID de usuario no disponible'));

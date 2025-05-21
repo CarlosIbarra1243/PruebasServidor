@@ -3,6 +3,13 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 
+import Swal from 'sweetalert2'
+
+
+interface SidebarToggle {
+  screenWidth: number;
+  collapsed: boolean;
+}
 
 @Component({
   selector: 'app-admin-home',
@@ -14,6 +21,14 @@ export class AdminHomeComponent implements OnInit {
   userId: number | null = null;
   userData: any = null;
   errorMessage: string | null = null;
+
+  isSidebarCollapsed = false;
+  screenWidth = 0;
+
+  onToggleSidebar(data: SidebarToggle): void {
+    this.screenWidth = data.screenWidth;
+    this.isSidebarCollapsed = data.collapsed;
+  }
 
   constructor(
     private authService: AuthService,
@@ -38,8 +53,31 @@ export class AdminHomeComponent implements OnInit {
     });
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth']);
-  }
+logout() {
+  Swal.fire({
+      title: "¿Seguro que deseas salir?",
+      text: "Piensa en tus refrigeradores, ¡te necesitan!",
+      imageUrl: 'images/duo.png',
+      imageHeight: 120,
+      imageWidth: 180,
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "¡Sí, ya vámonos!",
+      cancelButtonText: "No, cambié de opinión..."
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: "¡Sesión cerrada!",
+        text: "Nos vemos pronto.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
+      }).then(() => {
+        this.authService.logout();
+        this.router.navigate(['/auth']);
+      });
+    }
+  });
+}
 }

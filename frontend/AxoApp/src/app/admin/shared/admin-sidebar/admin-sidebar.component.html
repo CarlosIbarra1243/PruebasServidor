@@ -1,0 +1,33 @@
+<div class="sidebar" [ngClass]="collapsed ? 'sidebar-collapsed' : ''">
+    <div class="logo-container">
+        <button class="logo" (click)="toggleCollapse()">
+            <img src="images/sidebar-axo-logo.png" alt="Axo Logo">
+        </button>
+        @if(collapsed){
+            <div class="logo-text">AXO</div>
+            <button class="btn-close" (click)="closeSidebar()">
+                <i class="fa fa-times close-icon"></i>
+            </button>
+        }
+    </div>
+    <ul class="sidebar-nav">
+        @for (data of navData; track $index) {
+            <li class="sidebar-nav-item">
+                <a class="sidebar-nav-link" [routerLink]="[data.routeLink]" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+                    <i class="sidebar-link-icon" [class]="data.icon"></i>
+                    @if(collapsed){
+                        <span class="sidebar-link-text">{{data.label}}</span>
+                    }
+                </a>
+            </li>
+        }
+    <li class="sidebar-logout">
+        <button class="sidebar-logout-link" (click)="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            @if(collapsed){
+                <span class="sidebar-logout-text text-danger">Cerrar sesión</span>
+            }
+        </button>
+    </li>
+    </ul>
+</div>

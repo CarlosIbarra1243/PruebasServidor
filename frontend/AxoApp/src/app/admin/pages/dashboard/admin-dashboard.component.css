@@ -98,13 +98,13 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
   box-shadow: 0 0 8px #27ae6050;
 }
 .ball-online {
-  width: 25px;
-  height: 25px;
+  width: 15px;
+  height: 15px;
   background: #27ae60;
   box-shadow: 0 0 8px #27ae6050;
 }
 .text-online {
-  font-size: 20px;
+  font-size: 1.1rem;
 }
 .offline {
   background: #e74c3c;

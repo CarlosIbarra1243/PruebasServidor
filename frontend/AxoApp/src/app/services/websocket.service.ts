@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable, Subject } from 'rxjs';
 import { AuthService } from './auth.service';
-import { DeviceData } from '../admin/pages/dashboard/admin-dashboard.component'; // Ajusta la ruta según tu estructura
+import { DeviceData } from '../admin/pages/dashboard/admin-dashboard.component';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class WebSocketService {
   private socket: Socket;
   private _isConnected: boolean = false;
   private connectionStatus = new Subject<boolean>();
-  private selectedDeviceId: number | null = null; // ID de dispositivo seleccionado
+  private selectedDeviceId: number | null = null;
 
   constructor(private authService: AuthService) {
     this.socket = io('https://www.proyectoaxo.site', {
@@ -48,7 +48,6 @@ export class WebSocketService {
     }
   }
 
-  // Método para suscribirse a un dispositivo específico
   subscribeToDevice(deviceId: number): void {
     if (this.selectedDeviceId !== deviceId) {
       this.selectedDeviceId = deviceId;
@@ -60,24 +59,20 @@ export class WebSocketService {
     }
   }
 
-  // Observable para definir el evento que recibe un nuevo dato
   onNewData(): Observable<DeviceData> {
-    return new Observable<DeviceData>(observer => {
-      this.socket.on('nuevo_dato', (data: DeviceData) => {
-        // Solo procesa datos si coinciden con el dispositivo seleccionado
-        if (data.dispositivo_id === this.selectedDeviceId) {
-          observer.next(data);
-        }
+      return new Observable<DeviceData>(observer => {
+        this.socket.on('nuevo_dato', (data: DeviceData) => {
+          if (data.dispositivo_id === this.selectedDeviceId) {
+            observer.next(data); // Solo emite datos para el dispositivo seleccionado
+          }
+        });
       });
-    });
-  }
+    }
 
   onEstadoDispositivo(): Observable<any> {
     return new Observable(observer => {
       this.socket.on('estado_dispositivo', (data: any) => {
-        if (data.dispositivo_id === this.selectedDeviceId) {
-          observer.next(data);
-        }
+        observer.next(data);
       });
     });
   }
@@ -85,23 +80,13 @@ export class WebSocketService {
   onAlarmaPuerta(): Observable<any> {
     return new Observable(observer => {
       this.socket.on('alarma_puerta', (data: any) => {
-        if (data.dispositivo_id === this.selectedDeviceId) {
-          observer.next(data);
-        }
+        observer.next(data); 
       });
     });
   }
 
   getConnectionStatus(): Observable<boolean> {
     return this.connectionStatus.asObservable();
-  }
-
-  onGlobalStatus(): Observable<{ [key: number]: string }> {
-    return new Observable(observer => {
-      this.socket.on('estado_global', (data: { [key: number]: string }) => {
-        observer.next(data);
-      });
-    });
   }
 
   get isConnected(): boolean {

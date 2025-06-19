@@ -274,21 +274,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   private updateDeviceStatus(data: any): void {
     const index = this.dispositivos.findIndex(d => d.id === data.id);
     if (index !== -1) {
-      // Actualiza el dispositivo existente
       this.dispositivos[index] = {
-        ...this.dispositivos[index], // Conserva las propiedades existentes
-        status: data.status || this.dispositivos[index].status || 'offline', 
-        lastSeen: data.lastSeen ? new Date(data.lastSeen) : new Date() 
+        ...this.dispositivos[index],
+        status: data.status,
+        lastSeen: data.lastSeen ? new Date(data.lastSeen) : new Date()
       };
     } else {
-      // Agrega un nuevo dispositivo si no existe
       this.dispositivos.push({
         ...data,
-        status: data.status || 'offline', 
-        lastSeen: data.lastSeen ? new Date(data.lastSeen) : new Date() 
+        status: data.status,
+        lastSeen: data.lastSeen ? new Date(data.lastSeen) : new Date()
       });
     }
-    this.cdr.detectChanges(); // Fuerza la actualización en la vista
+    this.cdr.detectChanges();
   }
   
 
@@ -336,8 +334,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     const newDataSub = this.websocketService.onNewData().subscribe((data: DeviceData) => {
       const index = this.dispositivos.findIndex(d => d.id === data.dispositivo_id);
       if (index !== -1) {
-        this.dispositivos[index].lastSeen = new Date(); 
-        this.dispositivos[index].status = 'online'; 
+        this.dispositivos[index].lastSeen = new Date(); // Actualiza lastSeen con cada dato
         if (this.selectedDeviceId === data.dispositivo_id) {
           this.updateDeviceCharts(data.dispositivo_id, data);
         }
@@ -347,13 +344,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     const alarmaSub = this.websocketService.onAlarmaPuerta().subscribe(data => {
       this.mostrarNotificacion(data);
     });
-    const globalStatusSub = this.websocketService.onGlobalStatus().subscribe((deviceStatuses: { [key: number]: string }) => {
-      this.dispositivos.forEach(device => {
-        device.status = deviceStatuses[device.id] || 'offline';
-      });
-      this.cdr.detectChanges();
-    });
-    this.subscriptions.push(estadoSub, newDataSub, alarmaSub, globalStatusSub);
+    this.subscriptions.push(estadoSub, newDataSub, alarmaSub);
   }
 
   // Método para recargar manualmente los dispositivos
@@ -362,16 +353,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   isDeviceConnected(device: any): boolean {
-    const now = new Date();
-    //TODO: Verificar correctamente el caso en que no se pueda recuperar la última vez
-    const lastSeen = device.lastSeen ? new Date(device.lastSeen) : new Date();
-    const inactivityThreshold = 30 * 1000; // 30 segundos en milisegundos
-
-    if (device.id === this.selectedDeviceId) {
-      return device.status === 'online' || (lastSeen && (now.getTime() - lastSeen.getTime() < inactivityThreshold));
-    }
-
-    // Para dispositivos no seleccionados, usa lastSeen como indicador de conexión
-    return lastSeen && (now.getTime() - lastSeen.getTime() < inactivityThreshold);
+    return device.status === 'online'; 
   }
 }

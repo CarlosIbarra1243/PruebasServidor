@@ -68,6 +68,14 @@ getUserData(): Observable<any> {
     });
   }
 
+getDevices(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/devices`, { headers: this.getHeaders() });
+  }
+
+getRecentData(deviceId: number): Observable<any> {
+  return this.http.get(`/api/datos/recientes/${deviceId}`, { headers: this.getHeaders() });
+}
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('rol');

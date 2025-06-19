@@ -1,1 +1,81 @@
-<h1>Dashboard</h1>
+<div id="status" [ngClass]="{'online': websocketService.isConnected, 'offline': !websocketService.isConnected}">
+  {{ websocketService.isConnected ? '🟢 Conectado' : '🔴 Desconectado' }}
+</div>
+
+<div class="status-panel">
+  <h2 class="panel-title">Estado de Dispositivos</h2>
+  <div class="devices-grid">
+    <div *ngFor="let device of dispositivos" class="device-card" (click)="selectDevice(device.id)" [ngClass]="{'selected': selectedDeviceId === device.id}">
+      <div class="device-header">
+        <h3 class="device-name">{{ device.nombre }}</h3>
+      </div>
+      <div class="device-details" [ngClass]="{'connected': isDeviceConnected(device)}">
+          @if(isDeviceConnected(device)){
+            <div class="device-status">
+              <span class="status-indicator ball-online"></span>
+              <span class="status-text text-online">Conectado</span>
+            </div>
+          } @else {
+            <div class="device-status">
+              <span class="status-indicator offline"></span>
+              <span class="status-text">Desconectado</span><br>
+            </div>
+            <p class="last-seen">Última conexión: {{ device.lastSeen | date:'short' }}</p>
+          }
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="selectedDeviceId" class="dashboard-panel">
+  <h2 class="panel-title">{{ selectedDeviceName }}</h2>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3 class="chart-title">Temperatura Congelador (°C)</h3>
+      <div class="chart-container"><canvas id="tempCon-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Temperatura Refrigerador (°C)</h3>
+      <div class="chart-container"><canvas id="tempRef-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Temperatura Ambiente (°C)</h3>
+      <div class="chart-container"><canvas id="tempAmb-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Humedad Ambiente (%)</h3>
+      <div class="chart-container"><canvas id="humAmb-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Energía Consumida (kWh)</h3>
+      <div class="chart-container"><canvas id="enerCon-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Puerta Congelador</h3>
+      <div class="chart-container"><canvas id="puerCon-{{selectedDeviceId}}"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3 class="chart-title">Puerta Refrigerador</h3>
+      <div class="chart-container"><canvas id="puerRef-{{selectedDeviceId}}"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="alarma-notificacion" class="notification" [ngClass]="{'show': notificacion.mostrar, 'pending': notificacion.estado === 'pendiente', 'resolved': notificacion.estado === 'atendido'}" aria-live="polite" role="status">
+  <div class="notification-header">
+    <span class="notification-icon">🔔</span>
+    <h3 class="notification-title">{{ notificacion.tipo }}</h3>
+    <button class="notification-close" (click)="cerrarNotificacion()" aria-label="Cerrar notificación">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor">
+        <path d="M13 1L1 13M1 1L13 13" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="notification-content">
+    <div class="notification-meta">
+      <span class="notification-date">{{ notificacion.fechaHora }}</span>
+      <span class="notification-device">{{ notificacion.dispositivo }}</span>
+    </div>
+    <p class="notification-description">{{ notificacion.descripcion }}</p>
+  </div>
+</div>

@@ -66,6 +66,24 @@ app.get('/api/dispositivos', async (req, res) => {
   }
 });
 
+// ==================== Obtener datos recientes =========================
+app.get('/api/datos/recientes/:deviceId', async (req, res) => {
+  const { deviceId } = req.params;
+  const limit = 10; // Número de registros a obtener
+  try {
+    console.log(`Consultando datos recientes para deviceId: ${deviceId}`); // Log para depuración
+    const [rows] = await pool.promise().query(
+      'SELECT * FROM datos WHERE dispositivo_id = ? ORDER BY fecha DESC, hora DESC LIMIT ?',
+      [deviceId, limit]
+    );
+    console.log(`Datos obtenidos: ${JSON.stringify(rows)}`); // Log de los resultados
+    res.json(rows.reverse()); // Revertir para mostrar del más antiguo al más reciente
+  } catch (err) {
+    console.error('Error en la consulta SQL:', err); // Log detallado del error
+    res.status(500).json({ error: 'Error al obtener datos recientes', details: err.message });
+  }
+});
+
 // ==================== Obtener estadísticas =========================
 app.get('/api/estadisticas', async (req, res) => {
   try {
@@ -413,12 +431,55 @@ io.on('connection', (socket) => {
       }
     });
 
+    socket.on('subscribe_device', (deviceId, callback) => {
+      if (!deviceId) {
+        if (typeof callback === 'function') callback({ error: 'Se requiere ID de dispositivo' });
+        return;
+      }
+
+      // Unir al cliente a la sala del dispositivo
+      socket.join(`dispositivo-${deviceId}`);
+      console.log(`Cliente ${socket.id} se ha suscrito al dispositivo ${deviceId}`);
+
+      if (typeof callback === 'function') callback({ success: true });
+    });
+
 
     socket.on('disconnect', () => {
         console.log('Cliente web desconectado:', socket.id);
-      });
+    });
 
   });
+
+// Evento periódico para verificar estado de los dispositivos
+const checkDeviceStatus = async () => {
+  try {
+    const [rows] = await pool.promise().query(
+      `SELECT dispositivo_id, MAX(CONCAT(fecha, ' ', hora)) as last_seen 
+       FROM datos 
+       GROUP BY dispositivo_id`
+    );
+
+    const deviceStatuses = {};
+    const now = new Date();
+    const inactivityThreshold = 30 * 1000; // 30 segundos
+
+    rows.forEach(row => {
+      const lastSeen = new Date(row.last_seen);
+      const isActive = (now.getTime() - lastSeen.getTime()) < inactivityThreshold;
+      deviceStatuses[row.dispositivo_id] = isActive ? 'online' : 'offline';
+    });
+
+    // Emitir estado global a todos los clientes
+    io.emit('estado_global', deviceStatuses);
+    console.log('Estado global enviado:', deviceStatuses);
+  } catch (err) {
+    console.error('Error al verificar estados:', err);
+  }
+};
+
+// Ejecutar verificación cada 60 segundos
+setInterval(checkDeviceStatus, 60000);
 
 // ================= INICIO SERVIDORES =================
 const mqttServer = net.createServer(aedes.handle);

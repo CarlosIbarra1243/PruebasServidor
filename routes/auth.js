@@ -6,6 +6,19 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_ultrasecreta_xd'
 
+// Middleware para verificar JWT
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers && req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Token inválido' });
+    req.user = decoded;
+    next();
+  });
+};
+
 // Registro de usuario
 router.post('/register', async (req, res) => {
     try {
@@ -57,21 +70,35 @@ router.post('/login', async (req, res) => {
 });
 
 // Obtención de datos del usuario
-router.get('/:id', async (req, res) => {
-    try {
-        const userId = req.params.id;
-        if (req.user.id !== parseInt(userId)){
-            return res.status(403).json({ error: 'Acceso no autorizado al usuario' });
-        }
-        const [users] = await pool.promise().query('SELECT id, nombre, email, telefono, fecha_nacimiento, genero, rol FROM usuarios WHERE id = ?', [userId]);
-        if (users.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-        res.json(users[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al obtener datos del usuario' });
-    }
+// router.get('/:id', async (req, res) => {
+//     try {
+//         const userId = req.params.id;
+//         if (req.user.id !== parseInt(userId)){
+//             return res.status(403).json({ error: 'Acceso no autorizado al usuario' });
+//         }
+//         const [users] = await pool.promise().query('SELECT id, nombre, email, telefono, fecha_nacimiento, genero, rol FROM usuarios WHERE id = ?', [userId]);
+//         if (users.length === 0) {
+//             return res.status(404).json({ error: 'Usuario no encontrado' });
+//         }
+//         res.json(users[0]);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Error al obtener datos del usuario' });
+//     }
+// });
+
+router.get('/devices', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Obtenido del token JWT
+    const [devices] = await pool.promise().query(
+      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
+      [userId]
+    );
+    res.json(devices);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener dispositivos' });
+  }
 });
 
 module.exports = router;

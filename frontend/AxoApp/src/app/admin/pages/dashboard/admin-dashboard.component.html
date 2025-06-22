@@ -29,6 +29,16 @@
 
 <div *ngIf="selectedDeviceId" class="dashboard-panel">
   <h2 class="panel-title">{{ selectedDeviceName }}</h2>
+  <!-- Nueva sección de control de actuadores -->
+  @if (selectedDeviceModel === 'CoolSys-XR500') {
+    <div class="actuator-control">
+      <h3 class="control-title">Control de Actuadores</h3>
+      <div class="control-buttons">
+        <button class="control-button" (click)="activateActuator()">Activar</button>
+        <button class="control-button" (click)="deactivateActuator()">Desactivar</button>
+      </div>
+    </div>
+  }
   <div class="charts-grid">
     <div class="chart-card">
       <h3 class="chart-title">Temperatura Congelador (°C)</h3>

@@ -6,6 +6,8 @@ import { Chart } from 'chart.js';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 
+import Swal from 'sweetalert2';
+
 // Interfaz para las gráficas de un dispositivo
 interface DeviceCharts {
   tempConChart: Chart | null;
@@ -50,6 +52,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   usuarioId: number | null = null;
   dispositivos: any[] = [];
   selectedDeviceId: number | null = null;
+  selectedDeviceModel: string | null = null;
   deviceCharts: Map<number, DeviceCharts> = new Map();
   maxDataPoints: number = 10; // Número máximo de puntos en las gráficas
   notificacion: any = { mostrar: false, tipo: '', fechaHora: '', dispositivo: '', descripcion: '', estado: '' };
@@ -119,8 +122,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   selectDevice(deviceId: number): void {
     if (this.selectedDeviceId !== deviceId) {
       this.selectedDeviceId = deviceId;
-      this.websocketService.subscribeToDevice(deviceId); // Notifica al WebSocketService
-      this.loadHistoricalData(deviceId); 
+      const selectedDevice = this.dispositivos.find(d => d.id === deviceId);
+      this.selectedDeviceModel = selectedDevice ? selectedDevice.modelo : null;
+      this.websocketService.subscribeToDevice(deviceId);
+      this.loadHistoricalData(deviceId);
     }
   }
 
@@ -354,5 +359,27 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   isDeviceConnected(device: any): boolean {
     return device.status === 'online'; 
+  }
+
+  // Métodos para controlar el actuador
+  activateActuator(): void {
+    console.log(`Activando actuador para dispositivo ID: ${this.selectedDeviceId}`);
+    // this.websocketService.socket.emit('activate_actuator', this.selectedDeviceId);
+    Swal.fire({
+      title: "¡Bien hecho!",
+      text: "!Activaste el actuador!",
+      icon: "success"
+    });
+    
+  }
+
+  deactivateActuator(): void {
+    console.log(`Desactivando actuador para dispositivo ID: ${this.selectedDeviceId}`);
+    // this.websocketService.socket.emit('deactivate_actuator', this.selectedDeviceId);
+    Swal.fire({
+      title: "¡Bien hecho!",
+      text: "¡Desactivaste tu actuador!",
+      icon: "info"
+    });
   }
 }

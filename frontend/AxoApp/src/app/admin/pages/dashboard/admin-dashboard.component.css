@@ -212,3 +212,56 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
   line-height: 1.4;
   color: #2c3e50;
 }
+
+/* Control de actuadores */
+.actuator-control {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.control-title {
+  color: #34495e;
+  margin: 0 0 15px 0;
+  font-weight: 600;
+  font-size: 1.3rem;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.control-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.control-button:hover {
+  transform: translateY(-2px);
+}
+
+.control-button:first-child {
+  background-color: #27ae60;
+  color: #ffffff;
+}
+
+.control-button:first-child:hover {
+  background-color: #219653;
+}
+
+.control-button:last-child {
+  background-color: #e74c3c;
+  color: #ffffff;
+}
+
+.control-button:last-child:hover {
+  background-color: #c0392b;
+}

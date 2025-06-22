@@ -91,7 +91,7 @@ router.get('/devices', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id; // Obtenido del token JWT
     const [devices] = await pool.promise().query(
-      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
+      'SELECT id, nombre, modelo FROM dispositivos WHERE usuario_id = ?',
       [userId]
     );
     res.json(devices);

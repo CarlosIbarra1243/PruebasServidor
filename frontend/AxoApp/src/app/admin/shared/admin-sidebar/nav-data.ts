@@ -14,4 +14,9 @@ export const sidebarData = [
         icon: 'fa fa-bar-chart',
         label: 'Estadísticas'
     },
-]
+    {
+        routeLink: 'alerts',
+        icon: 'fa fa-bell',
+        label: 'Alertas'
+    },
+];

@@ -101,4 +101,31 @@ router.get('/devices', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/alertas', authenticateToken, async (req, res) => {
+  try {
+    const { deviceId } = req.query;
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Falta el parámetro deviceId' });
+    }
+
+    const userId = req.user.id;
+    const [devices] = await pool.promise().query(
+      'SELECT id FROM dispositivos WHERE usuario_id = ? AND id = ?',
+      [userId, deviceId]
+    );
+    if (devices.length === 0) {
+      return res.status(403).json({ error: 'Dispositivo no autorizado' });
+    }
+
+    const [alerts] = await pool.promise().query(
+      'SELECT id, dispositivo_id, fecha, hora, tipo, descripcion, origen, estado FROM alarmas WHERE dispositivo_id = ? ORDER BY fecha DESC, hora DESC',
+      [deviceId]
+    );
+    res.json(alerts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener alertas' });
+  }
+});
+
 module.exports = router;

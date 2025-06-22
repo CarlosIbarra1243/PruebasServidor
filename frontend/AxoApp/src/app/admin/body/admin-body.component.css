@@ -1,3 +1,8 @@
+
+router-outlet{
+    background: #F4F7FA;
+}
+
 .body {
     width: calc(100% - 5rem);
     height: 100%;

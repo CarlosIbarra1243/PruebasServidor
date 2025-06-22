@@ -1,0 +1,70 @@
+<div class="alerts-container">
+  <h2>Alertas de Dispositivos</h2>
+  <div class="content">
+    <div class="devices-list">
+      <ul class="device-list">
+        <li *ngFor="let device of devices" class="device-item" (click)="selectDevice(device)">
+          {{ device.nombre }}
+        </li>
+      </ul>
+    </div>
+    <div class="alerts-section" *ngIf="selectedDevice">
+      <h3>Alertas para {{ selectedDevice.nombre }}</h3>
+      <div class="date-filter-section">
+        <label for="startDate">Fecha de Inicio:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate" (ngModelChange)="onDateChange()">
+        <label for="endDate">Fecha de Fin:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate" (ngModelChange)="onDateChange()">
+        <button (click)="filterAlerts()">Filtrar</button>
+        <button (click)="resetFilters()">Restablecer</button>
+      </div>
+      <table class="alerts-table" *ngIf="isDesktopView">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Origen</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let alert of paginatedAlerts" [class.pending]="alert.estado.toLowerCase() === 'pendiente'">
+            <td>{{ alert.id }}</td>
+            <td>{{ formatDate(alert.fecha) }}</td>
+            <td>{{ alert.hora }}</td>
+            <td>{{ alert.tipo }}</td>
+            <td>{{ alert.descripcion }}</td>
+            <td>{{ alert.origen }}</td>
+            <td>
+              {{ alert.estado }}
+              <span *ngIf="alert.estado.toLowerCase() === 'pendiente'" class="status-icon">⏳</span>
+              <span *ngIf="alert.estado.toLowerCase() === 'atendido'" class="status-icon">✔</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="alerts-cards" *ngIf="!isDesktopView">
+        <div class="alert-card" *ngFor="let alert of paginatedAlerts" [class.pending]="alert.estado.toLowerCase() === 'pendiente'">
+          <div class="alert-card-item" data-label="ID"><span>ID</span><span>{{ alert.id }}</span></div>
+          <div class="alert-card-item" data-label="Fecha"><span>Fecha</span><span>{{ formatDate(alert.fecha) }}</span></div>
+          <div class="alert-card-item" data-label="Hora"><span>Hora</span><span>{{ alert.hora }}</span></div>
+          <div class="alert-card-item" data-label="Tipo"><span>Tipo</span><span>{{ alert.tipo }}</span></div>
+          <div class="alert-card-item" data-label="Descripción"><span>Descripción</span><span>{{ alert.descripcion }}</span></div>
+          <div class="alert-card-item" data-label="Origen"><span>Origen</span><span>{{ alert.origen }}</span></div>
+          <div class="alert-card-item" data-label="Estado" [class.not-pending]="alert.estado.toLowerCase() !== 'pendiente'"><span>Estado</span><span>{{ alert.estado }}</span></div>
+        </div>
+      </div>
+      <div class="pagination-controls">
+        <select (change)="changePageSize($event)">
+          <option *ngFor="let size of pageSizes" [value]="size" [selected]="size === pageSize">{{ size }}</option>
+        </select>
+        <button (click)="previousPage()" [disabled]="currentPage === 1">Anterior</button>
+        <span>Página {{ currentPage }} de {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</button>
+      </div>
+    </div>
+  </div>
+</div>

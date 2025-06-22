@@ -472,7 +472,6 @@ const checkDeviceStatus = async () => {
 
     // Emitir estado global a todos los clientes
     io.emit('estado_global', deviceStatuses);
-    console.log('Estado global enviado:', deviceStatuses);
   } catch (err) {
     console.error('Error al verificar estados:', err);
   }

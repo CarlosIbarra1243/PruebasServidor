@@ -1,6 +1,8 @@
 export interface Device {
   id: number;
   nombre: string;
+  modelo: string;
+  api_key: string;
 }
 
 export interface Alert {

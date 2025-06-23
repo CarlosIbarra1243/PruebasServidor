@@ -1,0 +1,11 @@
+<div class="form-container">
+  <h2>Agregar Nuevo Dispositivo</h2>
+  <form (ngSubmit)="onSubmit()">
+    <label for="name">Nombre:</label>
+    <input type="text" id="name" name="nombre" autocomplete="name" required [(ngModel)]="device.nombre">
+    <label for="model">Modelo:</label>
+    <input type="text" id="model" name="modelo" autocomplete="organization" required [(ngModel)]="device.modelo">
+    <button type="submit">Guardar</button>
+    <button type="button" (click)="onCancel()">Cancelar</button>
+  </form>
+</div>

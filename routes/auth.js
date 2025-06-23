@@ -101,6 +101,37 @@ router.get('/devices', authenticateToken, async (req, res) => {
   }
 });
 
+router.post('/addDevice', authenticateToken, async (req, res) => {
+  try {
+    console.log('Lo que estoy recibiendo en la API:', req.body);
+    const { nombre, modelo } = req.body;
+    if (!nombre || !modelo) {
+      return res.status(400).json({ error: 'Faltan datos requeridos (nombre y modelo)' });
+    }
+
+    const userId = req.user.id;
+    const apiKey = require('uuid').v4(); // Genera una nueva API key
+
+    const [result] = await pool.promise().query(
+      'INSERT INTO dispositivos (usuario_id, nombre, modelo, api_key) VALUES (?, ?, ?, ?)',
+      [userId, nombre, modelo, apiKey]
+    );
+
+    const newDevice = {
+      id: result.insertId,
+      usuario_id: userId,
+      nombre,
+      modelo,
+      api_key: apiKey
+    };
+
+    res.status(201).json({ message: 'Dispositivo agregado exitosamente', device: newDevice });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al agregar dispositivo' });
+  }
+});
+
 router.get('/alertas', authenticateToken, async (req, res) => {
   try {
     const { deviceId } = req.query;

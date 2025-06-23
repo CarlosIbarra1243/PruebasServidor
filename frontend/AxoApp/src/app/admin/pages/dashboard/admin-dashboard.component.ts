@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WebSocketService } from '../../../services/websocket.service';
 import { AuthService } from '../../../services/auth.service';
@@ -7,6 +7,8 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { Subscription } from 'rxjs';
 
 import Swal from 'sweetalert2';
+import { DeviceService } from '../../../services/device.service';
+import { RouterLink } from '@angular/router';
 
 // Interfaz para las gráficas de un dispositivo
 interface DeviceCharts {
@@ -36,7 +38,7 @@ export interface DeviceData {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css'],
   animations: [
@@ -63,7 +65,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   constructor(
     public websocketService: WebSocketService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private deviceService: DeviceService,
+    private injector: Injector,
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +122,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     });
     this.subscriptions.push(sub);
   }
+
 
   selectDevice(deviceId: number): void {
     if (this.selectedDeviceId !== deviceId) {

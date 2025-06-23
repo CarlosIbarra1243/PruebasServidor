@@ -71,15 +71,13 @@ app.get('/api/datos/recientes/:deviceId', async (req, res) => {
   const { deviceId } = req.params;
   const limit = 10; // Número de registros a obtener
   try {
-    console.log(`Consultando datos recientes para deviceId: ${deviceId}`); // Log para depuración
     const [rows] = await pool.promise().query(
       'SELECT * FROM datos WHERE dispositivo_id = ? ORDER BY fecha DESC, hora DESC LIMIT ?',
       [deviceId, limit]
     );
-    console.log(`Datos obtenidos: ${JSON.stringify(rows)}`); // Log de los resultados
     res.json(rows.reverse()); // Revertir para mostrar del más antiguo al más reciente
   } catch (err) {
-    console.error('Error en la consulta SQL:', err); // Log detallado del error
+    console.error('Error en la consulta SQL:', err); 
     res.status(500).json({ error: 'Error al obtener datos recientes', details: err.message });
   }
 });

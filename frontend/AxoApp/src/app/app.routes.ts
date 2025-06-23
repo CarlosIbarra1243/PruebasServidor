@@ -8,6 +8,7 @@ import { AdminComponent } from './admin/admin.component';
 import { AdminDashboardComponent } from './admin/pages/dashboard/admin-dashboard.component';
 import { AdminStatisticsComponent } from './admin/pages/statistics/admin-statistics.component';
 import { AdminAlertsComponent } from './admin/pages/alerts/admin-alerts.component';
+import { AddDeviceComponent } from './admin/components/add-device/add-device.component';
 
 export const routes: Routes = [
     {
@@ -50,6 +51,10 @@ export const routes: Routes = [
             {
                 path: 'alerts',
                 component: AdminAlertsComponent
+            },
+            {
+                path: 'add-device',
+                component: AddDeviceComponent
             },
             {
                 path: '**',

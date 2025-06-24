@@ -1,33 +1,50 @@
 <div class="sidebar" [ngClass]="collapsed ? 'sidebar-collapsed' : ''">
-    <div class="logo-container">
-        <button class="logo" (click)="toggleCollapse()">
-            <img src="images/sidebar-axo-logo.png" alt="Axo Logo">
+        <div class="logo-container">
+        <button class="logo" (click)="toggleCollapse()" [ngClass]="{'logo-large':collapsed}">
+            <!-- El [src] cambia según collapsed: imagen normal o colapsada -->
+            <img [src]="collapsed ? 'images/axo_logo.png' : 'images/axo_icon.png'" 
+                alt="Axo Logo"
+                [ngClass]="collapsed ? 'logo-large' : 'logo-small'"
+                />
         </button>
-        @if(collapsed){
-            <div class="logo-text">AXO</div>
-            <button class="btn-close" (click)="closeSidebar()">
-                <i class="fa fa-times close-icon"></i>
-            </button>
-        }
-    </div>
+        <button *ngIf="collapsed" class="btn-close" (click)="closeSidebar()">
+            <i class="fa fa-times close-icon"></i>
+        </button>
+        </div>
+
     <ul class="sidebar-nav">
         @for (data of navData; track $index) {
-            <li class="sidebar-nav-item">
-                <a class="sidebar-nav-link" [routerLink]="[data.routeLink]" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
-                    <i class="sidebar-link-icon" [class]="data.icon"></i>
-                    @if(collapsed){
-                        <span class="sidebar-link-text">{{data.label}}</span>
-                    }
-                </a>
-            </li>
+        <li class="sidebar-nav-item">
+            <a 
+            class="sidebar-nav-link"
+            [routerLink]="[data.routeLink]"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact:true}"
+            #rla="routerLinkActive"
+            (mouseenter)="data.isHover = true"
+            (mouseleave)="data.isHover = false"
+            >
+            <img 
+                class="sidebar-link-icon"
+                [src]="rla.isActive ? data.activeIcon : (data.isHover ? data.hoverIcon : data.customIcon)"
+                [ngClass]="[data.class]"
+            >
+            @if(collapsed) {
+                <span class="sidebar-link-text">{{ data.label }}</span>
+            }
+            </a>
+        </li>
         }
-    <li class="sidebar-logout">
-        <button class="sidebar-logout-link" (click)="logout()">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            @if(collapsed){
-                <span class="sidebar-logout-text text-danger">Cerrar sesión</span>
+        <li class="sidebar-logout">
+        <button class="sidebar-logout-link" 
+                (click)="logout()"
+                (mouseenter)="isLogoutHover = true" 
+                (mouseleave)="isLogoutHover = false">
+            <img [src]="isLogoutHover ? 'images/logout-icon-selected.png' : 'images/logout-icon.png'">
+            @if(collapsed) {
+            <span class="sidebar-logout-text text-danger">Cerrar sesión</span>
             }
         </button>
-    </li>
+        </li>
     </ul>
 </div>

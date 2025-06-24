@@ -1,7 +1,7 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { sidebarData } from './nav-data';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 
 import Swal from 'sweetalert2'
@@ -13,7 +13,7 @@ interface SidebarToggle {
 
 @Component({
   selector: 'app-admin-sidebar',
-  imports: [RouterLink, NgClass, RouterLinkActive],
+  imports: [RouterLink, NgClass, RouterLinkActive, CommonModule],
   templateUrl: './admin-sidebar.component.html',
   styleUrl: './admin-sidebar.component.css'
 })
@@ -21,7 +21,8 @@ export class AdminSidebarComponent implements OnInit {
   @Output() onToggleSidebar: EventEmitter<SidebarToggle> = new EventEmitter();
   collapsed = false;
   screenWidth = 0;
-  navData = sidebarData;
+  navData = sidebarData.map(item => ({...item, isHover: false}));
+  isLogoutHover = false;
 
   constructor(
     private authService: AuthService,

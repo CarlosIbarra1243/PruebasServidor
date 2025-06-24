@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-admin-alerts',
   templateUrl: './admin-alerts.component.html',
   styleUrls: ['./admin-alerts.component.css'],
+  standalone: true,
   imports: [CommonModule, FormsModule]
 })
 export class AdminAlertsComponent implements OnInit {
@@ -16,7 +17,6 @@ export class AdminAlertsComponent implements OnInit {
   selectedDevice: Device | null = null;
   alerts: Alert[] = [];
   paginatedAlerts: Alert[] = [];
-  displayedColumns: string[] = ['id', 'fecha', 'hora', 'tipo', 'descripcion', 'origen', 'estado'];
   private subscriptions: Subscription[] = [];
   startDate: string = '';
   endDate: string = '';
@@ -25,19 +25,24 @@ export class AdminAlertsComponent implements OnInit {
   pageSize: number = 10;
   pageSizes: number[] = [5, 10, 25, 50];
   totalPages: number = 1;
-  isDesktopView: boolean = true; 
+  isDesktopView: boolean = true;
 
   constructor(private alertService: AlertService) {
-    console.log('AdminAlertsComponent creado');
-    this.checkScreenSize(); // Verifica el tamaño al iniciar
+    this.checkScreenSize();
   }
 
   ngOnInit(): void {
-    console.log('AdminAlertsComponent initialized');
-    const sub = this.alertService.getDevices().subscribe(devices => {
+    const subDevices = this.alertService.getDevices().subscribe(devices => {
       this.devices = devices;
     });
-    this.subscriptions.push(sub);
+    this.subscriptions.push(subDevices);
+
+    this.selectedDevice = null;
+    const subAlerts = this.alertService.getAllAlerts().subscribe(alerts => {
+      this.alerts = alerts;
+      this.updatePagination();
+    });
+    this.subscriptions.push(subAlerts);
   }
 
   @HostListener('window:resize', ['$event'])
@@ -46,31 +51,47 @@ export class AdminAlertsComponent implements OnInit {
   }
 
   private checkScreenSize(): void {
-    this.isDesktopView = window.innerWidth > 768; 
+    this.isDesktopView = window.innerWidth > 768;
   }
 
-  selectDevice(device: Device): void {
-    this.selectedDevice = device;
-    this.currentPage = 1; 
-    const sub = this.alertService.getAlertsByDevice(device.id).subscribe(alerts => {
-      this.alerts = alerts;
-      if (this.startDate && this.endDate) {
-        this.filterAlerts();
-      } else {
-        this.updatePagination();
+  selectDevice(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const deviceId = Number(selectElement.value);
+    if (deviceId === 0) {
+      this.selectedDevice = null;
+      const sub = this.alertService.getAllAlerts().subscribe(alerts => {
+        this.alerts = alerts;
+        if (this.startDate && this.endDate) {
+          this.filterAlerts();
+        } else {
+          this.updatePagination();
+        }
+      });
+      this.subscriptions.push(sub);
+    } else {
+      this.selectedDevice = this.devices.find(device => device.id === deviceId) || null;
+      if (this.selectedDevice) {
+        this.currentPage = 1;
+        const sub = this.alertService.getAlertsByDevice(this.selectedDevice.id).subscribe(alerts => {
+          this.alerts = alerts;
+          if (this.startDate && this.endDate) {
+            this.filterAlerts();
+          } else {
+            this.updatePagination();
+          }
+        });
+        this.subscriptions.push(sub);
       }
-    });
-    this.subscriptions.push(sub);
+    }
   }
 
   ngOnDestroy(): void {
-    console.log('AdminAlertsComponent destroyed');
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   updatePagination(): void {
     this.totalPages = Math.ceil(this.alerts.length / this.pageSize);
-    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages || 1;
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.paginatedAlerts = this.alerts.slice(startIndex, endIndex);
@@ -79,7 +100,7 @@ export class AdminAlertsComponent implements OnInit {
   changePageSize(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     if (selectElement) {
-      this.pageSize = +selectElement.value; 
+      this.pageSize = +selectElement.value;
       this.currentPage = 1;
       this.updatePagination();
     }
@@ -105,7 +126,7 @@ export class AdminAlertsComponent implements OnInit {
   }
 
   onDateChange(): void {
-    this.currentPage = 1; 
+    this.currentPage = 1;
     this.updatePagination();
   }
 
@@ -113,46 +134,43 @@ export class AdminAlertsComponent implements OnInit {
     if (this.startDate && this.endDate) {
       const start = new Date(this.startDate).setHours(0, 0, 0, 0);
       const end = new Date(this.endDate).setHours(23, 59, 59, 999);
-      console.log('Adjusted Start:', new Date(start), 'Adjusted End:', new Date(end));
-
       const filteredAlerts = this.alerts.filter(alert => {
-        try {
-          const alertDateStr = this.formatDate(alert.fecha);
-          const alertDate = new Date(alertDateStr).getTime();
-          const isWithinRange = alertDate >= start && alertDate <= end;
-          console.log(`Alert (formatted): ${alertDateStr}, Start: ${new Date(start)}, End: ${new Date(end)}, Within Range: ${isWithinRange}`);
-          return isWithinRange;
-        } catch (e) {
-          console.error(`Error processing date ${alert.fecha}:`, e);
-          return false;
-        }
+        const alertDate = new Date(alert.fecha).getTime();
+        return alertDate >= start && alertDate <= end;
       });
-      console.log('Filtered alerts count:', filteredAlerts.length, 'Dates:', filteredAlerts.map(a => a.fecha));
       this.alerts = filteredAlerts;
-      this.currentPage = 1; 
+      this.currentPage = 1;
       this.updatePagination();
-    } else if (!this.startDate && !this.endDate) {
-      // Restaurar todas las alertas
-      if (this.selectedDevice) {
-        const sub = this.alertService.getAlertsByDevice(this.selectedDevice.id).subscribe(alerts => {
-          console.log('Restored alerts count:', alerts.length, 'Dates:', alerts.map(a => a.fecha));
-          this.alerts = alerts;
-          this.updatePagination();
-        });
-        this.subscriptions.push(sub);
-      }
+    } else if (!this.startDate && !this.endDate && !this.selectedDevice) {
+      const sub = this.alertService.getAllAlerts().subscribe(alerts => {
+        this.alerts = alerts;
+        this.updatePagination();
+      });
+      this.subscriptions.push(sub);
     }
   }
+
   resetFilters(): void {
     this.startDate = '';
     this.endDate = '';
-    this.currentPage = 1; 
+    this.currentPage = 1;
     if (this.selectedDevice) {
       const sub = this.alertService.getAlertsByDevice(this.selectedDevice.id).subscribe(alerts => {
         this.alerts = alerts;
         this.updatePagination();
       });
       this.subscriptions.push(sub);
+    } else {
+      const sub = this.alertService.getAllAlerts().subscribe(alerts => {
+        this.alerts = alerts;
+        this.updatePagination();
+      });
+      this.subscriptions.push(sub);
     }
+  }
+
+  getDeviceName(deviceId: number): string {
+    const device = this.devices.find(d => d.id === deviceId);
+    return device ? device.nombre : 'Desconocido';
   }
 }

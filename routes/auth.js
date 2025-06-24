@@ -135,23 +135,19 @@ router.post('/addDevice', authenticateToken, async (req, res) => {
 router.get('/alertas', authenticateToken, async (req, res) => {
   try {
     const { deviceId } = req.query;
-    if (!deviceId) {
-      return res.status(400).json({ error: 'Falta el parámetro deviceId' });
-    }
-
     const userId = req.user.id;
-    const [devices] = await pool.promise().query(
-      'SELECT id FROM dispositivos WHERE usuario_id = ? AND id = ?',
-      [userId, deviceId]
-    );
-    if (devices.length === 0) {
-      return res.status(403).json({ error: 'Dispositivo no autorizado' });
+
+    let query = 'SELECT id, dispositivo_id, fecha, hora, tipo, descripcion, origen, estado FROM alarmas WHERE dispositivo_id IN (SELECT id FROM dispositivos WHERE usuario_id = ?)';
+    let params = [userId];
+
+    if (deviceId) {
+      query += ' AND dispositivo_id = ?';
+      params.push(deviceId);
     }
 
-    const [alerts] = await pool.promise().query(
-      'SELECT id, dispositivo_id, fecha, hora, tipo, descripcion, origen, estado FROM alarmas WHERE dispositivo_id = ? ORDER BY fecha DESC, hora DESC',
-      [deviceId]
-    );
+    query += ' ORDER BY fecha DESC, hora DESC';
+    const [alerts] = await pool.promise().query(query, params);
+
     res.json(alerts);
   } catch (error) {
     console.error(error);

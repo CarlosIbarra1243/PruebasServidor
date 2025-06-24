@@ -27,4 +27,8 @@ export class AlertService {
   getAlertsByDevice(deviceId: number): Observable<Alert[]> {
     return this.http.get<Alert[]>(`${this.apiUrl}/alertas?deviceId=${deviceId}&sort=desc`, { headers: this.getHeaders() });
   }
+
+  getAllAlerts(): Observable<Alert[]> {
+    return this.http.get<Alert[]>(`${this.apiUrl}/alertas`, { headers: this.getHeaders() });
+  }
 }

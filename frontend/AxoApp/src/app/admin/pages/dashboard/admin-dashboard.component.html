@@ -3,7 +3,7 @@
 </div>
 
 <div class="status-panel">
-  <h2 class="panel-title">Estado de Dispositivos <button class="add-button" [routerLink]="['/admin/add-device']">+ Agregar nuevo</button></h2>
+  <h2 class="panel-title">Estado de Dispositivos</h2>
   <div class="devices-grid">
     <div *ngFor="let device of dispositivos" class="device-card" (click)="selectDevice(device.id)" [ngClass]="{'selected': selectedDeviceId === device.id}">
       <div class="device-header">
@@ -57,7 +57,7 @@
       <div class="chart-container"><canvas id="humAmb-{{selectedDeviceId}}"></canvas></div>
     </div>
     <div class="chart-card">
-      <h3 class="chart-title">Energía Consumida (kWh)</h3>
+      <h3 class="chart-title">Energía Consumida (kW)</h3>
       <div class="chart-container"><canvas id="enerCon-{{selectedDeviceId}}"></canvas></div>
     </div>
     <div class="chart-card">

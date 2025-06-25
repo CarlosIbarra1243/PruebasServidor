@@ -8,7 +8,6 @@ import { Subscription } from 'rxjs';
 
 import Swal from 'sweetalert2';
 import { DeviceService } from '../../../services/device.service';
-import { RouterLink } from '@angular/router';
 
 // Interfaz para las gráficas de un dispositivo
 interface DeviceCharts {
@@ -38,7 +37,7 @@ export interface DeviceData {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css'],
   animations: [
@@ -158,12 +157,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           beginAtZero: true,
           grid: { color: '#e9ecef' },
           ticks: { color: '#212529' },
-          title: { display: true, text: 'Valor', color: '#212529', font: { size: 12 } }
+          title: { display: true, color: '#212529', font: { size: 12 } }
         },
         x: {
           grid: { color: '#e9ecef' },
           ticks: { color: '#212529', maxTicksLimit: 10, maxRotation: 0, padding: 5 },
-          title: { display: true, text: 'Fecha y Hora (DD/MM/YY HH:MM)', color: '#212529', font: { size: 12 } }
+          title: { display: true, text: 'Hora (HH:MM)', color: '#212529', font: { size: 12 } }
         }
       },
       plugins: {
@@ -201,8 +200,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         const dateTimeString = `${d.fecha.split('T')[0]}T${d.hora}`;
         const date = new Date(dateTimeString);
         if (!isNaN(date.getTime())) {
-          return date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' +
-                 date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+          return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         }
         return 'Invalid';
       }).slice(-this.maxDataPoints);

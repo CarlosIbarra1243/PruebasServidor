@@ -147,6 +147,8 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chart-card {
@@ -162,9 +164,16 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
 
 .chart-container {
   position: relative;
-  height: 250px;
   width: 100%;
+  height: 250px;
+  min-width: 0;
+  overflow: hidden;
   margin-top: 10px;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* Notificación */
@@ -297,8 +306,11 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
     gap: 10px;
   }
 
-  .add-button {
-    width: 100%;
-    margin-top: 10px; 
+}
+
+@media (max-width: 992px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
 }
+

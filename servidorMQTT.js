@@ -116,7 +116,6 @@ const authenticateToken = (req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/api/user', authenticateToken, authRoutes);
 
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/frontend/browser')));
 
 app.get('*', (req, res) => {

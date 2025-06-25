@@ -1,124 +1,275 @@
-<div class="wrapper">
-  <header>
-      <nav class="navbar" id="navbar">
-        <div class="logo">
-          <h1>AXO Logo</h1>
-        </div>
-        <ul class="nav-links">
-          <li><a (click)="scrollToSection('about')" class="nav-link">Acerca de</a></li>
-          <li><a (click)="scrollToSection('mission')" class="nav-link">Misión</a></li>
-          <li><a (click)="scrollToSection('vision')" class="nav-link">Visión</a></li>
-          <li><a (click)="scrollToSection('objectives')" class="nav-link">Objetivos</a></li>
-          <li><a (click)="scrollToSection('collaborators')" class="nav-link">Colaboradores</a></li>
-        </ul>
-        <a routerLink="/auth" class="login-button">Ingresa ahora</a>
-      </nav>
-    </header>
-    
-    <main>
-      <!--TODO: Introducir un banner de presentación -->
-      <section class="banner">
-          <div class="banner-content">
-            <img src="images/axo-logo.png" alt="Logo Proyecto Axo" class="banner-logo">
-            <h1>Proyecto AXO</h1>
-            <p>Monitoreo de refrigeradores en busca de un futuro sostenible</p>
-          </div>
-      </section>
-      <!-- ABOUT -->
-      <section class="section about" id="about">
-        <div class="row">
-          <div class="col-md-6">
-            <h2>Acerca del Proyecto</h2>
-            <p>El Proyecto Axo es una solución IoT diseñada para monitorear en tiempo real la temperatura y humedad de refrigeradores domésticos, garantizando la seguridad y frescura de los alimentos. A través de sensores remotos y un gateway LoRa, los datos se transmiten de forma segura a una plataforma web alojada en la nube, permitiendo a los usuarios supervisar sus dispositivos desde cualquier lugar.</p>
-          </div>
-          <div class="about-img-container col-md-6">
-            <img src="images/about-fridge.png" alt="Algo" class="about-img">
-          </div>
-        </div>
-          </section>
-          
-      <!-- Fin ABOUT -->
-  
-      <hr>
-      <!-- MISIÓN Y VISIÓN -->
-      <div class="row">
-          <section class="section mission col-md-6" id="mission">
-              <h2>Misión</h2>
-              <p>Proporcionar una alternativa para la optimización del funcionamiento de los equipos de refrigeración.</p>
-            </section>
-          
-            <section class="section vision col-md-6" id="vision">
-              <h2>Visión</h2>
-              <p>Ser un referente en la optimización de sistemas de refrigeración a través de la innovación tecnológica, ofreciendo soluciones de monitoreo en tiempo real que transformen la manera en que las industrias gestionan sus equipos de refrigeración. </p>
-            </section>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="navbar">
+  <div class="logo">
+    <a [routerLink]="'/home'">
+      <img src="images/axo_logo.png" alt="Logo AXO" />
+    </a>
+  </div>
+
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
+  <nav id="navMenu">
+    <a [routerLink]="['/home']" (click)="scrollTop()" class="active">Inicio</a>
+    <a [routerLink]="['/about']" (click)="scrollTop()">Acerca de</a>
+    <a [routerLink]="['/info']" (click)="scrollTop()">Información</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('colabora')">Colaboradores</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('contacto')">Contacto</a>
+
+    <!-- Iniciar sesión solo visible en móviles -->
+    <a [routerLink]="['/auth']" class="login-btn mobile-only">
+      <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+      <div class="login-text">
+        <span>Iniciar</span>
+        <span>sesión</span>
       </div>
-      <!-- Fin MISIÓN Y VISIÓN -->
-      <hr>
-    
-      <section class="section objectives" id="objectives">
-        <h2>Objetivos</h2>
-        <div class="row">
-          <div class="col-md-6">
-              <ul class="objective-list">
-                  <li class="objective-item">Optimizar el funcionamiento de los sistemas de refrigeración domésticos.</li>
-                  <li class="objective-item">Mejorar la eficiencia energética.</li>
-                  <li class="objective-item">Garantizar la conservación adecuada de productos.</li>
-              </ul>
-          </div>
-          <div class="col-md-6">
-              <div class="objective-img-container">
-                  <img src="images/about-fridge.png" alt="Algo" class="objective-img">
-              </div>
-          </div>
+    </a>
+  </nav>
+
+  <!-- Iniciar sesión solo visible en desktop -->
+  <a [routerLink]="['/auth']" class="login-btn desktop-only">
+    <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+    <div class="login-text">
+      <span>Iniciar</span>
+      <span>sesión</span>
+    </div>
+  </a>
+</header>
+
+<script>
+  const toggle = document.getElementById("menuToggle");
+  const nav = document.getElementById("navMenu");
+
+  toggle.addEventListener("click", () => {
+    nav.classList.toggle("active");
+  });
+</script>
+
+<!-- ========================
+     Hero principal
+======================== -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>
+      Monitoreo Inteligente para<br />
+      Sistemas de Refrigeración
+    </h1>
+    <p>
+      Evita pérdidas, reduce costos y toma el control en<br />
+      tiempo real con IoT.
+    </p>
+    <button class="btn">Conoce más</button>
+  </div>
+</section>
+
+<!-- ================================================
+     Nueva sección: “Tecnología IoT para reinventar…”
+     ================================================ -->
+<section class="info-section">
+  <!-- Título centrado con línea debajo -->
+  <h2 class="info-title">
+    Tecnología IoT para reinventar la<br />
+    refrigeración industrial
+  </h2>
+  <!-- Contenedor de dos columnas -->
+  <div class="info-content">
+    <!-- Columna de texto -->
+    <div class="info-text">
+      <p>
+        En AXO desarrollamos soluciones inteligentes que transforman el monitoreo de
+        sistemas de refrigeración, combinando hardware de precisión, análisis y
+        una plataforma accesible.
+      </p>
+      <p>
+        Una solución IoT diseñada para monitorear en tiempo real la temperatura y
+        humedad de refrigeradores domésticos, garantizando la seguridad y frescura
+        de los alimentos. Esto, a través de sensores remotos y un gateway LoRa, los
+        datos se transmiten de forma segura a una plataforma web alojada en la nube,
+        permitiendo a los usuarios supervisar sus dispositivos desde cualquier lugar.
+      </p>
+    </div>
+    <!-- Columna de imagen -->
+    <div class="info-image">
+      <!-- Reemplaza el src con la ruta correcta a tu imagen -->
+      <img
+        src="images/refrigeradores.png"
+        alt="Refrigerador abierto con alimentos"
+      />
+    </div>
+  </div>
+</section>
+
+   <!-- ================================================
+       "El 40%”
+       ================================================ -->
+
+<section class="refrigeracion-section">
+  <div class="overlay">
+    <div class="content">
+      <h2>¿Sabías que el 40% de las pérdidas en refrigeración se deben a falta de monitoreo</h2>
+      <a [routerLink]="['/info']" class="btn-conoce">Conoce más</a>
+    </div>
+  </div>
+</section>
+
+<section class="mision-section">
+  <div class="mision-circle"></div>
+
+  <div class="mision-content">
+    <h2 class="mision-title">Misión</h2>
+
+    <p class="mision-text">
+      Desarrollar sistemas de monitoreo en tiempo real que optimicen la eficiencia energética y operativa de equipos de refrigeración, mediante sensores IoT y algoritmos predictivos.
+    </p>
+
+    <p class="mision-text">
+      Nuestro objetivo es empoderar a las empresas para que prevengan fallos, reduzcan costos y garanticen la preservación de sus productos con tecnología accesible y escalable.
+    </p>
+
+    <button class="mision-button">Conoce más</button>
+  </div>
+</section>
+
+  <!-- ================================
+     Sección “¿Por qué elegirnos?”
+     ================================ -->
+
+<section class="features-section">
+  <h2 class="features-title">¿Por qué elegirnos?</h2>
+  <p>Tecnología que genera ahorros, previene pérdidas y simplifica operaciones. Toma el control inteligente de tus sistemas con IoT.</p>
+  <div class="features-container">
+    <div class="feature-box">
+      <i class="fas fa-microchip"></i>
+      <h3>Tecnología de Punta</h3>
+      <p>Utilizamos sensores y sistemas IoT de última generación para asegurar eficiencia y precisión.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-bolt"></i>
+      <h3>Monitoreo en Tiempo Real</h3>
+      <p>Obtén información al instante sobre el estado de tus equipos desde cualquier lugar.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-chart-line"></i>
+      <h3>Análisis Inteligente</h3>
+      <p>Ofrecemos reportes automáticos y recomendaciones basadas en datos para optimizar tu negocio.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="team-section" id="colabora">
+  <h2 class="team-title">Colaboradores</h2>
+  <p class="team-description">
+    Somos un equipo de estudiantes de ingeniería computacional,<br>
+    apasionados por resolver problemas reales.
+  </p>
+
+  <div class="team-container">
+    <div class="team-member">
+      <img src="images/lider.jpg" alt="Carlos Ibarra">
+      <div class="member-name">Carlos Ibarra</div>
+      <div class="member-role">Líder</div>
+    </div>
+    <div class="team-member">
+      <img src="images/facilitador.jpg" alt="Brenda Ramirez">
+      <div class="member-name">Brenda Ramirez</div>
+      <div class="member-role">Facilitador</div>
+    </div>
+    <div class="team-member">
+      <img src="images/analista.jpg" alt="Mauricio Fragoso">
+      <div class="member-name">Mauricio Fragoso</div>
+      <div class="member-role">Analista</div>
+    </div>
+    <div class="team-member">
+      <img src="images/desarrollador.jpg" alt="Isaac Luviano">
+      <div class="member-name">Isaac Luviano</div>
+      <div class="member-role">Desarrollador</div>
+    </div>
+    <div class="team-member">
+      <img src="https://i.imgur.com/jQmYtnS.png" alt="Gemma de La Luz">
+      <div class="member-name">Gemma de La Luz</div>
+      <div class="member-role">Desarrollador</div>
+    </div>
+    <div class="team-member">
+      <img src="https://i.imgur.com/jQmYtnS.png" alt="Raul Lopez">
+      <div class="member-name">Raul Lopez</div>
+      <div class="member-role">Desarrollador</div>
+    </div>
+  </div>
+
+  <div class="team-footer">
+    Ingeniería computacional aplicada a resolver problemas reales
+  </div>
+</section>
+
+<section class="contact-section" id="contacto">
+  <h2>Contáctanos</h2>
+  <p>
+    Nuestro equipo te ayudará a encontrar la solución ideal para tu negocio.<br>
+    Estamos aquí para ayudarte. Escríbenos o visítanos.
+  </p>
+  <div class="contact-container">
+    <!-- Información de contacto -->
+    <div class="contact-info">
+      <h3>Información de contacto</h3>
+      <div class="info-box">
+        <i class="fas fa-envelope"></i>
+        <div>
+          <strong>Correo general</strong><br>
+          <a href="mailto:axo@gmail.com" target="_blank">{{'axo@gmail.com'}}</a>
         </div>
-  
-      </section>
-      <!-- MISIÓN Y VISIÓN -->
-      <hr>
-      <section class="section collaborators" id="collaborators">
-        <h2>Colaboradores</h2>
-        <div class="collaborators-grid">
-          <div class="collaborator">
-              <div class="collaborator-img-container">
-                  <img src="images/lider.jpg" alt="Líder">
-              </div>
-            <h5>Carlos Ibarra</h5>
-            <span>Líder</span>
-          </div>
-          <div class="collaborator">
-              <div class="collaborator-img-container">
-                  <img src="images/facilitador.jpg" alt="Facilitador">
-              </div>
-            <h5>Brenda Ramirez</h5>
-            <span>Facilitadora</span>
-          </div>
-          <div class="collaborator">
-              <div class="collaborator-img-container">
-                  <img src="images/analista.jpg" alt="Analista">
-              </div>
-            <h5>Mauricio Fragoso</h5>
-            <span>Analista</span>
-          </div>
-          <div class="collaborator">
-              <div class="collaborator-img-container">
-                  <img src="images/desarrollador.jpg" alt="Desarrollador">
-              </div>
-            <h5>Isaac Luviano</h5>
-            <span>Desarrollador</span>
-          </div>
-          <div class="collaborator">
-              <div class="collaborator-img-container">
-                  <img src="images/documentador.jpg" alt="Documentador">
-              </div>
-            <h5>Gemma de la Luz</h5>
-            <span>Documentadora</span>
-          </div>
+      </div>
+      <div class="info-box">
+        <i class="fas fa-envelope"></i>
+        <div>
+          <strong>Correo de soporte</strong><br>
+          <a href="mailto:asistenteaxo@gmail.com" target="_blank">{{'asistenteaxo@gmail.com'}}</a>
         </div>
-      </section>
-    </main>
-    
-    <footer class="footer">
-      <p>&copy; 2025 Proyecto Axo. Todos los derechos reservados.</p>
-      <p>goblinmaster666&#64;gmail.com</p>
-    </footer>
-</div>
+      </div>
+      <div class="info-box">
+        <i class="fas fa-phone"></i>
+        <div>
+          <strong>Número de contacto</strong><br>
+          <a href="tel:0100800759506">0100800759506</a>
+        </div>
+      </div>
+    </div>
+    <!-- Formulario -->
+    <div class="contact-form">
+      <h3>Formulario de contacto</h3>
+      <form>
+        <div class="form-group">
+          <i class="fas fa-user"></i>
+          <input type="text" placeholder="Nombre" required>
+        </div>
+        <div class="form-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" placeholder="Correo electrónico" required>
+        </div>
+        <div class="form-group">
+          <i class="fas fa-comment-dots"></i>
+          <textarea placeholder="Mensaje" required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Enviar</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <img src="images/axo_logo.png" alt="Logo AXO" class="logo-footer">
+    <div class="footer-text">
+      <h3>Contáctanos</h3>
+      <p>¿Listo para optimizar tus sistemas de refrigeración?</p>
+    </div>
+  </div>
+  <hr class="divider" />
+  <div class="footer-bottom">
+    <p>© 2025 Proyecto Axo. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+</body>

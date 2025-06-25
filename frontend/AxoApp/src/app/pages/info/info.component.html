@@ -1,0 +1,179 @@
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+  <div class="logo">
+    <a [routerLink]="['/home']">
+      <img src="images/axo_logo.png" alt="Logo AXO" />
+    </a>
+  </div>
+
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
+  <nav id="navMenu">
+    <a [routerLink]="['/home']" (click)="scrollTop()">Inicio</a>
+    <a [routerLink]="['/about']" (click)="scrollTop()">Acerca de</a>
+    <a [routerLink]="['/info']" (click)="scrollTop()" class="active">Información</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('colabora')">Colaboradores</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('contacto')">Contacto</a>
+
+    <!-- Iniciar sesión solo visible en móviles -->
+    <a [routerLink]="['/auth']" class="login-btn mobile-only">
+      <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+      <div class="login-text">
+        <span>Iniciar</span>
+        <span>sesión</span>
+      </div>
+    </a>
+  </nav>
+
+  <!-- Iniciar sesión solo visible en desktop -->
+  <a [routerLink]="['/auth']" class="login-btn desktop-only">
+    <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+    <div class="login-text">
+      <span>Iniciar</span>
+      <span>sesión</span>
+    </div>
+  </a>
+</header>
+
+<script>
+  const toggle = document.getElementById("menuToggle");
+  const nav = document.getElementById("navMenu");
+
+  toggle.addEventListener("click", () => {
+    nav.classList.toggle("active");
+  });
+</script>
+
+<section class="refrigeracion-section">
+  <div class="overlay">
+    <div class="content">
+      <h2>¿Sabías que el 40% de las pérdidas en refrigeración se deben a falta de monitoreo?</h2>
+      <a [routerLink]="['/info#conocer']" class="btn-conoce">Conoce más</a>
+    </div>
+  </div>
+</section>
+
+<section class="info-section">
+    <!-- Título centrado con línea debajo -->
+    <h2 class="info-title">
+      Tecnología IoT para reinventar la<br />
+      refrigeración industrial
+    </h2>
+
+    <!-- Contenedor de dos columnas -->
+    <div class="info-content">
+      <!-- Columna de texto -->
+      <div class="info-text">
+        <p>
+          En AXO desarrollamos soluciones inteligentes que transforman el monitoreo de
+          sistemas de refrigeración, combinando hardware de precisión, análisis y
+          una plataforma accesible.
+        </p>
+        <p>
+          Una solución IoT diseñada para monitorear en tiempo real la temperatura y
+          humedad de refrigeradores domésticos, garantizando la seguridad y frescura
+          de los alimentos. Esto, a través de sensores remotos y un gateway LoRa, los
+          datos se transmiten de forma segura a una plataforma web alojada en la nube,
+          permitiendo a los usuarios supervisar sus dispositivos desde cualquier lugar.
+        </p>
+      </div>
+      <!-- Columna de imagen -->
+      <div class="info-image">
+        <img
+          src="images/refrigeradores.png"
+          alt="Refrigerador abierto con alimentos"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="riesgos">
+  <h2>Incidentes comunes que ponen en riesgo tus productos</h2>
+  <div class="riesgos-grid">
+    <!-- Columna 1 -->
+    <div class="riesgo-box">
+      <h3>Puertas abiertas accidentalmente</h3>
+      <img src="images/refrigeradores.png" alt="Puertas abiertas" />
+      <ul>
+        <li>Personal que olvida cerrar puertas tras cargar/descargar mercancía.</li>
+        <li>Sellos dañados que no cierran herméticamente.</li>
+      </ul>
+      <p class="dato">Pérdida de frío → aumento de temperatura del 5°C en 15 minutos.</p>
+    </div>
+
+    <!-- Columna 2 -->
+    <div class="riesgo-box">
+      <h3>Cambios bruscos de temperatura</h3>
+      <img src="images/refrigeradores.png" alt="Cambios de temperatura" />
+      <ul>
+        <li>Fallas en compresores o termostatos mal calibrados.</li>
+        <li>Cortes de energía sin respaldo.</li>
+      </ul>
+      <p class="dato">15% de merma en productos sensibles (vacunas, mariscos, etc.).</p>
+    </div>
+  </div>
+</section>
+
+<section class="monitoreo">
+  <div class="container-monitoreo">
+    <div class="monitoreo-texto">
+      <h2>Monitorea en tiempo real tu refrigeración,<br>desde cualquier dispositivo</h2>
+
+      <div class="monitoreo-box azul">
+        <strong>Monitoreo en tiempo real 24/7</strong>
+        <p>Temperatura y humedad actuales.<br>Histórico de últimos 30 días (gráficos y estadísticas).</p>
+      </div>
+
+      <div class="monitoreo-box gris">
+        <strong>Alertas inmediatas</strong>
+        <p><strong>Dispositivo físico:</strong><br>Alarma sonora en el cuarto frío/refrigerador.</p>
+        <p><strong>Plataforma digital:</strong><br>Notificaciones push/email/SMS con:</p>
+      </div>
+    </div>
+
+    <div class="monitoreo-imagen">
+      <img src="images/refri-collage.png" alt="Dashboard de monitoreo en tablet">
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <h2 class="features-title">¿Por qué elegirnos?</h2>
+  <p>Tecnología que genera ahorros, previene pérdidas y simplifica operaciones. Toma el control inteligente de tus sistemas con IoT.</p>
+  <div class="features-container">
+    <div class="feature-box">
+      <i class="fas fa-microchip"></i>
+      <h3>Tecnología de Punta</h3>
+      <p>Utilizamos sensores y sistemas IoT de última generación para asegurar eficiencia y precisión.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-bolt"></i>
+      <h3>Monitoreo en Tiempo Real</h3>
+      <p>Obtén información al instante sobre el estado de tus equipos desde cualquier lugar.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-chart-line"></i>
+      <h3>Análisis Inteligente</h3>
+      <p>Ofrecemos reportes automáticos y recomendaciones basadas en datos para optimizar tu negocio.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <img src="images/axo_logo.png" alt="Logo AXO" class="logo-footer">
+    <div class="footer-text">
+      <h3>Contáctanos</h3>
+      <p>¿Listo para optimizar tus sistemas de refrigeración?</p>
+    </div>
+  </div>
+  <hr class="divider" />
+  <div class="footer-bottom">
+    <p>© 2025 Proyecto Axo. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+</body>

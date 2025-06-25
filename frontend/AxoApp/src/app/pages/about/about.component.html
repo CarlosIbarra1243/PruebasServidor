@@ -1,0 +1,193 @@
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+  <div class="logo">
+    <a [routerLink]="['/home']">
+      <img src="images/axo_logo.png" alt="Logo AXO" />
+    </a>
+  </div>
+
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
+  <nav id="navMenu">
+    <a [routerLink]="['/home']" (click)="scrollTop()">Inicio</a>
+    <a [routerLink]="['/about']" (click)="scrollTop()" class="active">Acerca de</a>
+    <a [routerLink]="['/info']" (click)="scrollTop()">Información</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('colabora')">Colaboradores</a>
+    <a [routerLink]="['/home']" (click)="scrollTo('contacto')">Contacto</a>
+
+    <!-- Iniciar sesión solo visible en móviles -->
+    <a [routerLink]="['/auth']" class="login-btn mobile-only">
+      <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+      <div class="login-text">
+        <span>Iniciar</span>
+        <span>sesión</span>
+      </div>
+    </a>
+  </nav>
+
+  <!-- Iniciar sesión solo visible en desktop -->
+  <a [routerLink]="['/auth']" class="login-btn desktop-only">
+    <img src="images/user-login.jpg" alt="Iniciar sesión" class="login-icon" />
+    <div class="login-text">
+      <span>Iniciar</span>
+      <span>sesión</span>
+    </div>
+  </a>
+</header>
+
+<script>
+  const toggle = document.getElementById("menuToggle");
+  const nav = document.getElementById("navMenu");
+
+  toggle.addEventListener("click", () => {
+    nav.classList.toggle("active");
+  });
+</script>
+
+<section class="conocenos-section pt-5 mt-5 px-4">
+  <div class="container">
+    <h2 class="titulo-seccion mb-4">Conócenos</h2>
+    <div class="row align-items-center">
+      <!-- Columna izquierda: Texto -->
+      <div class="col-md-5">
+        <h4 class="fw-bold">Tecnología con propósito</h4>
+        <p>Nosotros somos el equipo AXO, un grupo de estudiantes universitarios enfocados en la ingeniería computacional.</p>
+        <p>Desde 2023, diseñamos soluciones IoT que monitorean, predicen y automatizan para hacer industrias más eficientes y seguras.</p>
+      </div>
+
+      <!-- Columna centro: Imágenes estilo collage -->
+      <div class="col-md-4 text-center">
+        <div class="collage">
+          <img src="images/refri-collage.png" alt="Collage AXO" class="img-fluid rounded shadow" />
+        </div>
+      </div>
+
+      <!-- Columna derecha: Valores -->
+      <div class="col-md-3">
+        <ul class="valores-lista list-unstyled">
+          <li><strong>Aprendizaje continuo</strong></li>
+          <li><strong>Trabajo colaborativo</strong></li>
+          <li><strong>Impacto sostenible</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="colaboradores-section py-5 px-4 text-center">
+  <div class="container">
+    <h2 class="titulo-seccion mb-2">Colaboradores</h2>
+    <p class="mb-4">
+      Somos un equipo de estudiantes de ingeniería computacional,<br>
+      apasionados por resolver problemas reales.
+    </p>
+
+    <div class="row justify-content-center">
+      <!-- Repite esta tarjeta para cada colaborador -->
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="images/lider.jpg" alt="Carlos Ibarra" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Carlos Ibarra</h5>
+          <p class="rol-colaborador">Líder</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="images/facilitador.jpg" alt="Brenda Ramirez" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Brenda Ramirez</h5>
+          <p class="rol-colaborador">Facilitador</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="images/analista.jpg" alt="Mauricio Fragoso" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Mauricio Fragoso</h5>
+          <p class="rol-colaborador">Analista</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="images/desarrollador.jpg" alt="Isaac Luviano" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Isaac Luviano</h5>
+          <p class="rol-colaborador">Desarrollador</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="https://i.imgur.com/jQmYtnS.png" alt="Gemma de la Luz" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Gemma de la Luz</h5>
+          <p class="rol-colaborador">Desarrollador</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-2 mb-4">
+        <div class="card-colaborador">
+          <img src="https://i.imgur.com/jQmYtnS.png" alt="Raul Lopez" class="foto-colaborador">
+          <h5 class="nombre-colaborador">Raul Lopez</h5>
+          <p class="rol-colaborador">Desarrollador</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-4">Ingeniería computacional aplicada a resolver problemas reales</p>
+  </div>
+</section>
+
+<section class="objetivo-section">
+  <div class="objetivo-circle"></div>
+
+  <div class="objetivo-content">
+    <h2 class="objetivo-title">Nuestro objetivo</h2>
+
+    <p class="objetivo-text">
+      Proporcionar una alternativa para la optimización del funcionamiento de los equipos de refrigeración.
+    </p>
+
+    <div class="objetivo-subtitle">Objetivos específicos:</div>
+
+    <ul class="objetivo-list">
+      <li>Optimizar el funcionamiento</li>
+      <li>Mejorar la eficiencia energética</li>
+      <li>Garantizar la conservación adecuada de productos</li>
+    </ul>
+  </div>
+</section>
+
+<section class="mision-vision">
+  <div class="mv-box mision">
+    <div class="mv-content">
+      <i class="fas fa-mountain icon-mv"></i>
+      <h2>Misión</h2>
+      <p>Democratizar el monitoreo inteligente de refrigeración para PYMES y grandes empresas, mediante soluciones IoT escalables que reduzcan costos y prevengan pérdidas.</p>
+    </div>
+  </div>
+  <div class="mv-box vision">
+    <div class="mv-content">
+      <i class="fas fa-eye icon-mv"></i>
+      <h2>Visión</h2>
+      <p>Ser el partner tecnológico líder en gestión térmica industrial en Latinoamérica, impulsando estándares de eficiencia energética y sostenibilidad.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <img src="images/axo_logo.png" alt="Logo AXO" class="logo-footer">
+    <div class="footer-text">
+      <h3>Contáctanos</h3>
+      <p>¿Listo para optimizar tus sistemas de refrigeración?</p>
+    </div>
+  </div>
+  <hr class="divider" />
+  <div class="footer-bottom">
+    <p>© 2025 Proyecto Axo. Todos los derechos reservados.</p>
+  </div>
+</footer>
+</body>

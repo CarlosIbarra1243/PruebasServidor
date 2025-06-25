@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-about',
   imports: [RouterLink],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  templateUrl: './about.component.html',
+  styleUrl: './about.component.css'
 })
-export class HomeComponent {
+export class AboutComponent {
   scrollTo(fragment: string) {
     setTimeout(() => {
       const element = document.getElementById(fragment);

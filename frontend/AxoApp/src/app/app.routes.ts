@@ -10,11 +10,26 @@ import { AdminStatisticsComponent } from './admin/pages/statistics/admin-statist
 import { AdminAlertsComponent } from './admin/pages/alerts/admin-alerts.component';
 import { AddDeviceComponent } from './admin/components/add-device/add-device.component';
 import { AdminDevicesComponent } from './admin/pages/devices/admin-devices/admin-devices.component';
+import { AboutComponent } from './pages/about/about.component';
+import { InfoComponent } from './pages/info/info.component';
 
 export const routes: Routes = [
     {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
+    },
+    {
         path: 'home',
         component: HomeComponent,
+    },
+    {
+        path: 'about',
+        component: AboutComponent
+    },
+    {
+        path: 'info',
+        component: InfoComponent
     },
     { 
         path: 'auth', 

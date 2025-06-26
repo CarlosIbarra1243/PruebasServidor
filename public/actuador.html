@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Actuador</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #btn-actuador {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #estado {
+      margin-top: 20px;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Actuador IoT</h1>
+  <button id="btn-actuador">🔒 Activar Actuador</button>
+  <div id="estado">Estado actual: Desconocido...</div>
+
+  <script>
+    const socket = io('http://192.168.100.17:3000');
+    let dispositivoId = 1;
+    let estado = 0;
+
+    const btn = document.getElementById('btn-actuador');
+    const estadoLabel = document.getElementById('estado');
+
+    // Función para actualizar el texto del botón y el estado
+    function actualizarUI(nuevoEstado) {
+      estado = nuevoEstado;
+      btn.textContent = estado === 1 ? '🔓 Desactivar Actuador' : '🔒 Activar Actuador';
+      estadoLabel.textContent = `Estado actual: ${estado === 1 ? 'Encendido' : 'Apagado'}`;
+    }
+
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor WebSocket');
+      socket.emit('subscribe', 1);
+      socket.emit('subscribe_device', dispositivoId);
+
+      // 👇 Podrías agregar aquí una petición HTTP para consultar el estado inicial
+      fetch(`/api/estado_actuador?dispositivoId=${dispositivoId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (typeof data.estado === 'number') {
+            actualizarUI(data.estado);
+          }
+        })
+        .catch(err => {
+          console.warn("⚠️ No se pudo obtener estado inicial:", err.message);
+        });
+    });
+
+    // Evento cuando se recibe un nuevo estado del servidor
+    socket.on('estado_actuador', ({ dispositivoId: id, nuevoEstado }) => {
+      if (id === dispositivoId) {
+        actualizarUI(nuevoEstado);
+      }
+    });
+
+    btn.addEventListener('click', () => {
+      const nuevoEstado = estado === 0 ? 1 : 0;
+
+      socket.emit('cambiar_estado_actuador', {
+        dispositivoId,
+        nuevoEstado
+      }, (respuesta) => {
+        if (respuesta.error) {
+          alert("Error: " + respuesta.error);
+        } else {
+          console.log("✅ Actuador cambiado correctamente");
+          actualizarUI(nuevoEstado); // también lo actualizamos localmente
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

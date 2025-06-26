@@ -99,6 +99,23 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
+app.get('/api/estado_actuador', async (req, res) => {
+  const dispositivoId = parseInt(req.query.dispositivoId, 10);
+  if (!dispositivoId) return res.status(400).json({ error: 'ID no válido' });
+
+  try {
+    const [[actuador]] = await pool.promise().query(
+      'SELECT activo as estado FROM actuadores WHERE dispositivo_id = ?',
+      [dispositivoId]
+    );
+    if (!actuador) return res.status(404).json({ error: 'Actuador no encontrado' });
+    res.json({ estado: actuador.estado });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener el estado', details: err.message });
+  }
+});
+
+
 // Middleware para verificar JWT
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers && req.headers['authorization'];
@@ -112,7 +129,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// ================= CONFIGURACIÓN EXPRESS =================
+//================= CONFIGURACIÓN EXPRESS =================
 app.use('/auth', authRoutes);
 app.use('/api/user', authenticateToken, authRoutes);
 
@@ -190,25 +207,48 @@ aedes.on('client', (client) => {
   
     const apiKey = client.authenticated ? client.apikey : null;
     
-    if (apiKey && client.usuarioId) {
-      pool.query(
-        'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-        [apiKey],
-        (err, results) => {
-          if (!err && results.length > 0) {
-            const dispositivo = results[0];
-            deviceStatus.set(dispositivo.id, 'online');
-            
-            io.to(`usuario-${client.usuarioId}`).emit('estado_dispositivo', {
-              id: dispositivo.id,
-              nombre: dispositivo.nombre,
-              status: 'online',
-              lastSeen: new Date().toISOString()
-            });
-          }
+  if (apiKey && client.usuarioId) {
+    pool.query(
+      'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
+      [apiKey],
+      (err, results) => {
+        if (!err && results.length > 0) {
+          const dispositivo = results[0];
+          deviceStatus.set(dispositivo.id, 'online');
+          
+          io.to(`usuario-${client.usuarioId}`).emit('estado_dispositivo', {
+            id: dispositivo.id,
+            nombre: dispositivo.nombre,
+            status: 'online',
+            lastSeen: new Date().toISOString()
+          });
+
+          // ✅ Obtener estado actual del actuador y enviarlo al ESP32
+          pool.query(
+            'SELECT activo FROM actuadores WHERE dispositivo_id = ?',
+            [dispositivo.id],
+            (err, result) => {
+              if (!err && result.length > 0) {
+                const estado = result[0].activo;
+
+                aedes.publish({
+                  topic: `estado_actuador/${dispositivo.id}`,
+                  payload: Buffer.from(JSON.stringify({ estado })),
+                  qos: 0,
+                  retain: false
+                });
+
+                console.log(`📡 Enviado estado actual del actuador al dispositivo ${dispositivo.id}: ${estado}`);
+              }
+            }
+          );
         }
-      );
-    }
+      }
+    );
+  }
+
+
+
   });
 
 aedes.on('clientDisconnect', (client) => {
@@ -428,23 +468,86 @@ io.on('connection', (socket) => {
       }
     });
 
-    socket.on('subscribe_device', (deviceId, callback) => {
+    socket.on('subscribe_device', async (deviceId, callback) => {
       if (!deviceId) {
         if (typeof callback === 'function') callback({ error: 'Se requiere ID de dispositivo' });
         return;
       }
 
-      // Unir al cliente a la sala del dispositivo
       socket.join(`dispositivo-${deviceId}`);
       console.log(`Cliente ${socket.id} se ha suscrito al dispositivo ${deviceId}`);
+
+      // Obtener y enviar estado actual del actuador
+      try {
+        const [[estado]] = await pool.promise().query(
+          'SELECT activo FROM actuadores WHERE dispositivo_id = ?',
+          [deviceId]
+        );
+
+        if (estado) {
+          socket.emit('estado_actuador', {
+            dispositivoId: deviceId,
+            nuevoEstado: estado.activo
+          });
+        }
+      } catch (err) {
+        console.error('Error al obtener estado del actuador:', err.message);
+      }
 
       if (typeof callback === 'function') callback({ success: true });
     });
 
 
+
     socket.on('disconnect', () => {
         console.log('Cliente web desconectado:', socket.id);
     });
+
+      socket.on('cambiar_estado_actuador', async ({ dispositivoId, nuevoEstado }, callback) => {
+        try {
+          if (![0, 1].includes(nuevoEstado)) {
+            return callback?.({ error: 'Estado inválido' });
+          }
+
+          const [[actuador]] = await pool.promise().query(
+            'SELECT id FROM actuadores WHERE dispositivo_id = ?',
+            [dispositivoId]
+          );
+          if (!actuador) {
+            return callback?.({ error: 'Este dispositivo no tiene actuador registrado' });
+          }
+
+          const topic = `actuador/${dispositivoId}`;
+          const mensaje = JSON.stringify({ estado: nuevoEstado });
+
+          aedes.publish({
+            topic,
+            payload: Buffer.from(mensaje),
+            qos: 0,
+            retain: true
+          });
+
+          // ✅ ACTUALIZAR EN BASE DE DATOS
+          await pool.promise().query(
+            'UPDATE actuadores SET activo = ? WHERE dispositivo_id = ?',
+            [nuevoEstado, dispositivoId]
+          );
+
+          // Emitir evento de cambio de estado a la web
+          io.to(`dispositivo-${dispositivoId}`).emit('estado_actuador', {
+            dispositivoId,
+            nuevoEstado
+          });
+
+          callback?.({ success: true });
+
+        } catch (err) {
+          console.error('❌ Error al cambiar estado del actuador:', err.message);
+          callback?.({ error: 'Error interno del servidor' });
+        }
+      });
+
+
 
   });
 

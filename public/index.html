@@ -218,6 +218,13 @@
         <h2>Estado de Dispositivos</h2>
         <div class="devices-container" id="devices-container"></div>
     </div>
+    <div style="margin: 20px;">
+  <button id="btn-cambiar-estado" 
+          style="padding: 10px 20px; background-color: #ff9800; border: none; border-radius: 6px; color: white; font-size: 1rem; cursor: pointer;">
+    🔒 Activar Actuador
+  </button>
+</div>
+
 
     <a href="estadisticas.html">
         <button id="btn-estadisticas"
@@ -403,6 +410,8 @@
         });
 
 
+
+
         /*Alarma Funcionalidad*/
         let timeoutAlarma;
 
@@ -440,7 +449,24 @@
             cont.classList.remove('pendiente', 'atendido');
         }, 300);
         }
+        
 
+        let estadoActual = 0; // 0 = cerrado (apagado), 1 = abierto (encendido)
+
+document.getElementById('btn-cambiar-estado').addEventListener('click', () => {
+    // Alternar estado
+    estadoActual = estadoActual === 0 ? 1 : 0;
+
+    // Emitir evento al backend
+    socket.emit('cambiar_estado_actuador', {
+        dispositivoId: 1,       // ID del dispositivo (ajústalo si necesitas)
+        nuevoEstado: estadoActual
+    });
+
+    // Cambiar texto del botón
+    const texto = estadoActual === 1 ? '🔓 Desactivar Actuador' : '🔒 Activar Actuador';
+    document.getElementById('btn-cambiar-estado').textContent = texto;
+});
     </script>
 </body>
 </html>

@@ -92,4 +92,27 @@ export class WebSocketService {
   get isConnected(): boolean {
     return this._isConnected;
   }
+
+  cambiarEstadoActuador(dispositivoId: number, nuevoEstado: number): Observable<any> {
+  return new Observable(observer => {
+    this.socket.emit('cambiar_estado_actuador', { dispositivoId, nuevoEstado }, (respuesta: any) => {
+      if (respuesta && respuesta.error) {
+        observer.error(respuesta.error);
+      } else {
+        observer.next(respuesta);
+      }
+      observer.complete();
+    });
+  });
+}
+
+
+onEstadoActuador(): Observable<{ dispositivoId: number, nuevoEstado: number }> {
+  return new Observable(observer => {
+    this.socket.on('estado_actuador', (data) => {
+      observer.next(data);
+    });
+  });
+}
+
 }

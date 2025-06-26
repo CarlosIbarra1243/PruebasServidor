@@ -33,10 +33,32 @@
   @if (selectedDeviceModel === 'CoolSys-XR500') {
     <div class="actuator-control">
       <h3 class="control-title">Control de Actuadores</h3>
-      <div class="control-buttons">
-        <button class="control-button" (click)="activateActuator()">Activar</button>
-        <button class="control-button" (click)="deactivateActuator()">Desactivar</button>
-      </div>
+<div class="control-buttons" style="text-align: center;">
+  <button
+    id="btn-actuador"
+    (click)="toggleActuador()"
+    [disabled]="selectedDeviceId === null"
+    style="
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    ">
+    {{ estadoActuador === 1 ? '🔓 Desactivar Actuador' : '🔒 Activar Actuador' }}
+  </button>
+
+  <div id="estado" style="margin-top: 10px; font-size: 1.1rem;">
+    Estado actual:
+    <ng-container [ngSwitch]="estadoActuador">
+      <span *ngSwitchCase="1">Encendido</span>
+      <span *ngSwitchCase="0">Apagado</span>
+      <span *ngSwitchDefault>Desconocido...</span>
+    </ng-container>
+  </div>
+</div>
     </div>
   }
   <div class="charts-grid">

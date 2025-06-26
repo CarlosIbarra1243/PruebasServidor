@@ -74,6 +74,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.usuarioId) {
       this.loadDevices();
       this.setupSubscriptions();
+      this.setupActuadorSubscription();
     } else {
       console.error('Usuario no autenticado');
     }
@@ -385,4 +386,44 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       icon: "info"
     });
   }
+
+  // Estado del actuador (0 = apagado, 1 = encendido)
+estadoActuador: number = -1;
+
+toggleActuador(): void {
+  if (this.selectedDeviceId === null) return;
+
+  const nuevoEstado = this.estadoActuador === 1 ? 0 : 1;
+
+  this.websocketService.cambiarEstadoActuador(this.selectedDeviceId, nuevoEstado).subscribe({
+    next: () => {
+      this.estadoActuador = nuevoEstado;
+      Swal.fire({
+        icon: 'success',
+        title: 'Actuador actualizado',
+        text: `El actuador fue ${nuevoEstado === 1 ? 'activado' : 'desactivado'}.`
+      });
+    },
+    error: (err) => {
+      console.error('Error al cambiar estado del actuador', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cambiar el estado del actuador.'
+      });
+    }
+  });
 }
+
+
+private setupActuadorSubscription(): void {
+  const actuadorSub = this.websocketService.onEstadoActuador().subscribe(data => {
+    if (data.dispositivoId === this.selectedDeviceId) {
+      this.estadoActuador = data.nuevoEstado;
+      this.cdr.detectChanges();
+    }
+  });
+  this.subscriptions.push(actuadorSub);
+}
+}
+

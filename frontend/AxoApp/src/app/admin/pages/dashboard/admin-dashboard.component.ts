@@ -61,6 +61,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   private subscriptions: Subscription[] = []; // Para manejar suscripciones
   errorMessage: string | null = null; // Para mostrar errores al usuario
   doorStatus = { refrigerator: false, freezer: false };
+  currentValues: { [prop: string]: { label: string, value: number | string } } = {
+  TempCon: { label: 'Temperatura Congelador (°C)', value: '—' },
+  TempRef: { label: 'Temperatura Refrigerador (°C)', value: '—' },
+  TempAmb: { label: 'Temperatura Ambiente (°C)', value: '—' },
+  HumAmb: { label: 'Humedad Ambiente (%)', value: '—' },
+  EnerCon: { label: 'Energía Consumida (kW)', value: '—' },
+};
+
+  get currentValueKeys(): string[] {
+    return Object.keys(this.currentValues);
+  }
 
   constructor(
     public websocketService: WebSocketService,
@@ -347,6 +358,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         this.dispositivos[index].lastSeen = new Date(); // Actualiza lastSeen con cada dato
         if (this.selectedDeviceId === data.dispositivo_id) {
           this.updateDeviceCharts(data.dispositivo_id, data);
+          Object.entries(this.currentValues).forEach(([key, _]) => {
+          this.currentValues[key].value = data[key as keyof DeviceData];
+      });
         }
       }
       if (data.dispositivo_id === this.selectedDeviceId) {

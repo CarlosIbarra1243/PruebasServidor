@@ -79,6 +79,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Valores Actuales -->
+  <section class="current-values-section">
+    <h3>Valores actuales</h3>
+    <table class="current-values-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let key of currentValueKeys">
+          <td>{{ currentValues[key].label }}</td>
+          <td>{{ currentValues[key].value }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
   <div class="charts-grid">
     <div class="chart-card">
       <h3 class="chart-title">Temperatura Congelador (°C)</h3>

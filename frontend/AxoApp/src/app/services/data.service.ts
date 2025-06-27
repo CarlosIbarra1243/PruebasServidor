@@ -33,17 +33,20 @@ export class DataService {
     return this.http.get(`/api/dispositivos?usuarioId=${userId}`);
   }
 
-  getEstadisticas(deviceId: number, intervalo: string): Observable<any> {
+  getEstadisticas(deviceId: number, intervalo: string, start?: string, end?: string): Observable<any> {
     const userId = this.authService.getUserId();
     if (!userId) {
       return throwError(() => new Error('Usuario no autenticado'));
     }
 
+    let params: any = { deviceId, intervalo };
+    if (intervalo === 'custom' && start && end) {
+      params.start = start;
+      params.end = end;
+    }
+
     return this.http.get<any[]>(`/api/estadisticas`, {
-      params: { 
-        deviceId, 
-        intervalo
-      }
+      params
     }).pipe(
       catchError((error) => {
         console.error(`Error en dispositivo ${deviceId}:`, error);

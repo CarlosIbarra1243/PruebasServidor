@@ -30,6 +30,8 @@ export class AdminStatisticsComponent implements OnInit {
   selectedInterval = '8h';
   datos: any[] = [];
   private charts: Chart[] = [];
+  startDate: string | null = null;
+  endDate: string | null = null;
 
   public chartConfigs = [
     { 
@@ -101,10 +103,26 @@ export class AdminStatisticsComponent implements OnInit {
     });
   }
 
-  cargarDatos(): void {
-    if (!this.selectedDeviceId || !this.selectedInterval) return;
+cargarDatos(): void {
+    if (!this.selectedDeviceId) return;
 
-    this.dataService.getEstadisticas(this.selectedDeviceId, this.selectedInterval)
+    let interval: string;
+    let start: string = '';
+    let end: string = '';
+
+    if (this.selectedInterval === 'custom') {
+      if (!this.startDate || !this.endDate) {
+        console.error('Debes seleccionar ambas fechas para el intervalo personalizado');
+        return;
+      }
+      start = this.startDate;
+      end = this.endDate;
+      interval = this.selectedInterval;
+    } else {
+      interval = this.selectedInterval;
+    }
+
+    this.dataService.getEstadisticas(this.selectedDeviceId, interval, start, end)
       .subscribe({
         next: (data) => this.handleChartData(data),
         error: (err) => this.handleChartError(err)
@@ -129,26 +147,38 @@ export class AdminStatisticsComponent implements OnInit {
   }
 
   private formatXAxisLabels(labels: string[]): string[] {
-    return labels.map(label => {
-      const date = new Date(label);
-      
-      if (this.selectedInterval === '8h') {
-        return date.toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        });
-      }
-      
-      if (this.selectedInterval === '7d') {
-        return date.toLocaleDateString('es-ES', {
-          weekday: 'long'
-        }).replace(/(^\w{1})|(\s+\w{1})/g, letra => letra.toUpperCase());
-      }
+      return labels.map(label => {
+        if (!label) return 'Sin dato'; // Manejo de valores nulos o vacíos
+        const date = new Date(label);
+        if (isNaN(date.getTime())) {
+          console.warn('Fecha inválida encontrada:', label); // Depuración
+          return label; // Devuelve el valor original si no es válido
+        }
 
-      return label;
-    });
-  }
+        if (this.selectedInterval === '8h') {
+          return date.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+        }
+        
+        if (this.selectedInterval === '7d') {
+          return date.toLocaleDateString('es-ES', {
+            weekday: 'long'
+          }).replace(/(^\w{1})|(\s+\w{1})/g, letra => letra.toUpperCase());
+        }
+
+        // Para 'custom', usa un formato de fecha completo
+        return date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      });
+    }
 
   private renderCharts(datos: any[]): void {
     if (!datos.length) return;

@@ -14,7 +14,16 @@
         <select [(ngModel)]="selectedInterval" class="custom-select">
           <option value="8h">Últimas 8 horas</option>
           <option value="7d">Últimos 7 días</option>
+          <option value="custom">Personalizado</option>
         </select>
+      </div>
+
+      <!-- Inputs de fecha visibles solo si selectedInterval es 'custom' -->
+      <div *ngIf="selectedInterval === 'custom'" class="filter-group date-inputs">
+        <label>Fecha Inicio:</label>
+        <input type="date" [(ngModel)]="startDate">
+        <label>Fecha Fin:</label>
+        <input type="date" [(ngModel)]="endDate">
       </div>
       
       <button class="load-button" (click)="cargarDatos()">
@@ -22,7 +31,6 @@
       </button>
     </div>
   </div>
-
 
   <div class="charts-grid">
     <div *ngIf="datos.length === 0" class="no-data">

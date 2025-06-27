@@ -87,16 +87,37 @@ app.get('/api/estadisticas', async (req, res) => {
   try {
     const deviceId = parseInt(req.query.deviceId, 10);
     const intervalo = req.query.intervalo;
+    const start = req.query.start;
+    const end = req.query.end;
     let callSql;
-    if (intervalo === '8h') callSql = 'CALL obtener_ultimas_8_horas(?)';
-    else if (intervalo === '7d') callSql = 'CALL ultimaSemana(?)';
-    else return res.status(400).json({ error: 'Intervalo no válido' });
-    const [resultSets] = await pool.promise().query(callSql, [deviceId]);
+    let params;
+
+    if (intervalo === '8h') {
+      callSql = 'CALL obtener_ultimas_8_horas(?)';
+      params = [deviceId];
+    } else if (intervalo === '7d') {
+      callSql = 'CALL ultimaSemana(?)';
+      params = [deviceId];
+    } else if (intervalo === 'custom' && start && end) {
+      callSql = 'CALL obtener_estadisticas_personalizadas(?, ?, ?)';
+      params = [deviceId, start, end];
+    } else {
+      return res.status(400).json({ error: 'Intervalo no válido o faltan parámetros' });
+    }
+
+    const [resultSets] = await pool.promise().query(callSql, params);
     const data = Array.isArray(resultSets[0]) ? resultSets[0] : resultSets;
-    res.json(data);
+
+    const formattedData = data.map(row => ({
+      ...row,
+      bloque_tiempo: row.bloque_tiempo ? row.bloque_tiempo.toISOString().slice(0, 19).replace('T', ' ') : null
+    }));
+
+    res.json(formattedData);
   } catch (err) {
-    res.status(500).json({ error: 'Error interno' });
-  }
+    console.error(err);
+    res.status(500).json({ error: 'Error interno' });
+  }
 });
 
 app.get('/api/estado_actuador', async (req, res) => {

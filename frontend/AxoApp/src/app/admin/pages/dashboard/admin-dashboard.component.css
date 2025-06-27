@@ -315,10 +315,10 @@ h3.chart-title { font-size: 1.2rem; text-align: center; }
 }
 
 button.deactivate-actuator{
-  background-color: #e74c3c;
+  background-color: #219653;
 }
 
 button.activate-actuator{
-  background-color: #219653;
+  background-color: #e74c3c;
 }
 

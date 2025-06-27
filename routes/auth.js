@@ -1,4 +1,5 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
@@ -20,28 +21,66 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Registro de usuario
-router.post('/register', async (req, res) => {
-    try {
-        const { email, fechaNacimiento, genero, nombre, password, rol, telefono} = req.body;
-        if (!email || !password || !nombre || !fechaNacimiento || !genero || !telefono || !rol) {
-            return res.status(400).json({ error: 'Faltan datos requeridos' });
-        }
-        
-        if (![1, 2].includes(parseInt(rol))) {
-            return res.status(400).json({ error: 'Rol inválido' });
-        }
+router.post('/register',
+  [
+    body('nombre')
+      .trim()
+      .escape() // elimina caracteres
+      .isLength({ min: 3, max: 50 }).withMessage('Nombre debe tener entre 3 y 50 caracteres')
+      .matches(/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/).withMessage('Nombre solo puede tener letras y espacios'),
 
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const [result] = await pool.promise().query(
-            'INSERT INTO usuarios (nombre, email, password, telefono, fecha_nacimiento, genero, rol) VALUES (?,?,?,?,?,?,?)', [nombre, email, hashedPassword, telefono, fechaNacimiento, genero, rol]
-        );
-        res.status(201).json({ id: result.insertId, message: 'Usuario registrado' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al registrar usuario' });
+    body('email')
+      .normalizeEmail()
+      .isEmail().withMessage('Correo inválido'),
+
+    body('password')
+      .isLength({ min: 8 }).withMessage('Contraseña muy corta')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
+      .withMessage('La contraseña debe incluir mayúscula, minúscula, número y símbolo'),
+
+    body('telefono')
+      .trim()
+      .matches(/^\d{10}$/).withMessage('El teléfono debe tener exactamente 10 dígitos'),
+
+    body('fechaNacimiento')
+      .isISO8601().withMessage('Fecha inválida')
+      .toDate(),
+
+    body('genero')
+      .isIn(['Masculino', 'Femenino', 'Otro']).withMessage('Género inválido'),
+
+    body('rol')
+      .isIn([1, 2]).withMessage('Rol inválido'),
+  ],
+
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // Devuelve los errores de validación
+      return res.status(400).json({ errors: errors.array() });
     }
-});
+
+    try {
+      const { email, fechaNacimiento, genero, nombre, password, rol, telefono } = req.body;
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      const [result] = await pool.promise().query(
+        `INSERT INTO usuarios 
+          (nombre, email, password, telefono, fecha_nacimiento, genero, rol) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [nombre, email, hashedPassword, telefono, fechaNacimiento, genero, rol]
+      );
+
+      res.status(201).json({ id: result.insertId, message: 'Usuario registrado' });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al registrar usuario' });
+    }
+  }
+);
 
 // Inicio de sesión
 router.post('/login', async (req, res) => {

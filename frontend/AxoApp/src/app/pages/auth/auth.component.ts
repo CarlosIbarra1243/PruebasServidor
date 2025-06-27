@@ -55,19 +55,39 @@ export class AuthComponent {
       password: ['', Validators.required],
     });
 
-    this.registerForm = this.fb.group({
-      nombre: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      fechaNacimiento: ['', Validators.required],
-      genero: ['', Validators.required],
-      password: ['', [
-        Validators.required,
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-      ]],
-    });
+  this.registerForm = this.fb.group({
+    nombre: ['', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(50),
+      Validators.pattern(/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/)
+    ]],
+    email: ['', [Validators.required, Validators.email]],
+    telefono: ['', [
+      Validators.required,
+      Validators.pattern(/^[0-9]{10}$/)
+    ]],
+    fechaNacimiento: ['', [
+      Validators.required,
+      this.minAgeValidator(13)
+    ]],
+    genero: ['', Validators.required],
+    password: ['', [
+      Validators.required,
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
+    ]]
+  });
   }
 
+  minAgeValidator(minAge: number) {
+    return (ctrl: AbstractControl): ValidationErrors | null => {
+      const date = new Date(ctrl.value);
+      if (isNaN(date.getTime())) return { invalidDate: true };
+      const age = new Date().getFullYear() - date.getFullYear();
+      return age >= minAge ? null : { tooYoung: { requiredAge: minAge } };
+    };
+  }
   onSubmit(type: 'login' | 'register') {
     if (type === 'login' && this.loginForm.valid) {
       this.authService.login(this.loginForm.value).subscribe({
@@ -82,8 +102,17 @@ export class AuthComponent {
         error: (err) => this.snackBar.open('Fallo en inicio de sesión. Por favor, intente nuevamente', 'Cerrar', { duration: 5000 }),
       });
     } else if (type === 'register' && this.registerForm.valid) {
-      const user = this.registerForm.value;
-      user.rol = 1;
+      const raw = this.registerForm.value;
+      const user = {
+        nombre: raw.nombre.trim(),
+        email: raw.email.trim().toLowerCase(),
+        telefono: raw.telefono,
+        fechaNacimiento: raw.fechaNacimiento,
+        genero: raw.genero,
+        password: raw.password,
+        rol: 2
+      };
+      user.rol = 2;
       user.fechaNacimiento = this.dateFormat(user.fechaNacimiento);
       this.authService.register(user).subscribe({
         next: () => {

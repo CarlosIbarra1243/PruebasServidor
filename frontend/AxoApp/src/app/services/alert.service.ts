@@ -31,4 +31,8 @@ export class AlertService {
   getAllAlerts(): Observable<Alert[]> {
     return this.http.get<Alert[]>(`${this.apiUrl}/alertas`, { headers: this.getHeaders() });
   }
+
+  getUltimasAlertas(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/alertas/ultimas/10`, { headers: this.getHeaders() });
+  }
 }

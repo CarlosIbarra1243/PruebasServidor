@@ -224,7 +224,6 @@ router.post('/deactivateDevice/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Falta el estado' });
     }
 
-    // Verificar que el dispositivo existe y pertenece al usuario
     const [device] = await pool.promise().query(
       'SELECT usuario_id FROM dispositivos WHERE id = ? AND estado = ?',
       [deviceId, '1']
@@ -271,6 +270,34 @@ router.get('/alertas', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener alertas' });
+  }
+});
+
+router.get('/alertas/ultimas/10', authenticateToken, async (req, res) => {
+  try {
+    const { deviceId } = req.query;
+    const userId = req.user.id;
+
+    let query = `
+      SELECT a.id, d.nombre AS dispositivo_nombre, a.fecha, a.hora, a.tipo, a.descripcion, a.origen, a.estado
+      FROM alarmas a
+      JOIN dispositivos d ON a.dispositivo_id = d.id
+      WHERE d.usuario_id = ? AND d.estado = ?
+    `;
+    let params = [userId, '1'];
+
+    if (deviceId) {
+      query += ' AND a.dispositivo_id = ?';
+      params.push(deviceId);
+    }
+
+    query += ' ORDER BY a.fecha DESC, a.hora DESC LIMIT 10';
+    const [alerts] = await pool.promise().query(query, params);
+
+    res.json(alerts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las últimas alertas' });
   }
 });
 

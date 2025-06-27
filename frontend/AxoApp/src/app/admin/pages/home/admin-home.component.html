@@ -1,25 +1,52 @@
-<h1>Inicio</h1>
 <div class="home">
-  <h3>¡Bienvenido al Panel de Administradores! 😎</h3>
-  <p>Aquí puedes gestionar usuarios y configuraciones del sistema.</p>
-  <hr>
-  <section>
-    <h3>Últimos datos nodo central</h3>
-    <div *ngIf="ultimoDato" class="card-container">
-      <div class="card">
-        <h4>Temperatura</h4>
-        <p>{{ ultimoDato.temperatura }} °C</p>
-        <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
-      </div>
-      <div class="card">
-        <h4>Humedad</h4>
-        <p>{{ ultimoDato.humedad }} %</p>
-        <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
-      </div>
+  <header class="home-header">
+    <h1>Inicio</h1>
+    <div class="welcome-section">
+      <h3>¡Bienvenido al Panel Administrativo!</h3>
+      <p>Aquí puedes gestionar tus dispositivos y monitorear el estado de tus refrigeradores.</p>
     </div>
-    <div *ngIf="!ultimoDato">
-      <p>Cargando datos...</p>
-    </div>
-  </section>
-  <button (click)="logout()">Cerrar Sesión</button>
+    <hr class="separator">
+  </header>
+  <main class="home-main">
+    <section class="section data-section">
+      <h3 class="section-title">Últimos datos nodo central</h3>
+      <div *ngIf="ultimoDato" class="card-container">
+        <div class="card">
+          <h4>Temperatura</h4>
+          <p>{{ ultimoDato.temperatura }} °C</p>
+          <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+        <div class="card">
+          <h4>Humedad</h4>
+          <p>{{ ultimoDato.humedad }} %</p>
+          <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </div>
+      <div *ngIf="!ultimoDato" class="loading">
+        <p>Cargando datos...</p>
+      </div>
+    </section>
+        <section class="section alarms-section">
+      <h3 class="section-title">Alarmas recientes</h3>
+      <table class="alarms-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let alerta of ultimasAlertas">
+            <td>{{ alerta.dispositivo_nombre }}</td>
+            <td>{{ alerta.descripcion }}</td>
+            <td>{{ alerta.fecha | date:'dd/MM/yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <footer class="home-footer">
+    <button (click)="logout()">Cerrar Sesión</button>
+  </footer>
 </div>

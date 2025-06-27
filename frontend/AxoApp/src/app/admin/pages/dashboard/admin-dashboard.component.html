@@ -41,12 +41,13 @@
     style="
       padding: 15px 30px;
       font-size: 1.2rem;
-      background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-    ">
+    "
+    [ngClass]="estadoActuador === 1 ? 'deactivate-actuator' : 'activate-actuator'"
+    >
     {{ estadoActuador === 1 ? '🔓 Desactivar Actuador' : '🔒 Activar Actuador' }}
   </button>
 

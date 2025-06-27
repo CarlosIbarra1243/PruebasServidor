@@ -5,6 +5,7 @@ import { AuthService } from '../../../services/auth.service';
 
 import Swal from 'sweetalert2'
 import { DataService } from '../../../services/data.service';
+import { AlertService } from '../../../services/alert.service';
 
 
 interface SidebarToggle {
@@ -23,6 +24,7 @@ export class AdminHomeComponent implements OnInit {
   userData: any = null;
   errorMessage: string | null = null;
   ultimoDato: any = null;
+  ultimasAlertas: any[] = [];
 
   isSidebarCollapsed = false;
   screenWidth = 0;
@@ -35,13 +37,15 @@ export class AdminHomeComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private dataService: DataService 
+    private dataService: DataService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
       this.userId = this.authService.getUserId();
       this.loadUserData();
       this.loadUltimoDato();
+      this.cargarUltimasAlertas();
   }
 
   loadUserData() {
@@ -64,6 +68,17 @@ export class AdminHomeComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar el último dato:', err);
+      }
+    });
+  }
+
+  cargarUltimasAlertas(): void {
+    this.alertService.getUltimasAlertas().subscribe({
+      next: (data) => {
+        this.ultimasAlertas = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar las últimas alertas:', err);
       }
     });
   }

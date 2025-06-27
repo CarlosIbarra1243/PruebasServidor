@@ -55,6 +55,15 @@ export class DataService {
     );
   }
 
+  getUltimoNodocentral(): Observable<any> {
+    return this.http.get('/api/nodocentral/ultimo').pipe(
+      catchError((error) => {
+        console.error('Error al obtener el último dato de Nodocentral:', error);
+        return throwError(() => new Error('Error al obtener datos'));
+      })
+    );
+  }
+
   getSocket(): Socket {
     return this.socket;
   }

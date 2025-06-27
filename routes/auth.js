@@ -69,6 +69,8 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
+
 router.get('/devices', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id; // Obtenido del token JWT

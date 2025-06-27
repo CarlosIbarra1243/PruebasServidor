@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 
 import Swal from 'sweetalert2'
+import { DataService } from '../../../services/data.service';
 
 
 interface SidebarToggle {
@@ -21,6 +22,7 @@ export class AdminHomeComponent implements OnInit {
   userId: number | null = null;
   userData: any = null;
   errorMessage: string | null = null;
+  ultimoDato: any = null;
 
   isSidebarCollapsed = false;
   screenWidth = 0;
@@ -33,11 +35,13 @@ export class AdminHomeComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private dataService: DataService 
   ) {}
 
   ngOnInit(): void {
       this.userId = this.authService.getUserId();
       this.loadUserData();
+      this.loadUltimoDato();
   }
 
   loadUserData() {
@@ -49,6 +53,17 @@ export class AdminHomeComponent implements OnInit {
       error: (err) => {
         console.error('Error obteniendo información del usuario', err);
         this.errorMessage = 'No se pudieron obtener los datos del usuario';
+      }
+    });
+  }
+
+  loadUltimoDato(): void {
+    this.dataService.getUltimoNodocentral().subscribe({
+      next: (data) => {
+        this.ultimoDato = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar el último dato:', err);
       }
     });
   }

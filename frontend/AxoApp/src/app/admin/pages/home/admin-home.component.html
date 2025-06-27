@@ -3,19 +3,23 @@
   <h3>¡Bienvenido al Panel de Administradores! 😎</h3>
   <p>Aquí puedes gestionar usuarios y configuraciones del sistema.</p>
   <hr>
-  <h3>Información de usuario</h3>
-  <p>ID de usuario: {{ userId }}</p>
-  @if (userData){
-    <h4>Datos:</h4>
-    <p>Id: {{userData.id}}</p>
-    <p>Nombre completo: {{userData.nombre}}</p>
-    <p>Correo electrónico: {{userData.email}}</p>
-    <p>Teléfono: {{userData.telefono}}</p>
-    <p>Fecha de nacimiento: {{userData.fecha_nacimiento | date}}</p>
-    <p>Género: {{userData.genero | titlecase}}</p>
-    <p>Rol: {{userData.rol === 1 ? 'Usuario' : 'Administrador'}}</p>
-  }
-  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
-  <hr>
+  <section>
+    <h3>Últimos datos nodo central</h3>
+    <div *ngIf="ultimoDato" class="card-container">
+      <div class="card">
+        <h4>Temperatura</h4>
+        <p>{{ ultimoDato.temperatura }} °C</p>
+        <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+      <div class="card">
+        <h4>Humedad</h4>
+        <p>{{ ultimoDato.humedad }} %</p>
+        <small>{{ ultimoDato.timestamp | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+    </div>
+    <div *ngIf="!ultimoDato">
+      <p>Cargando datos...</p>
+    </div>
+  </section>
   <button (click)="logout()">Cerrar Sesión</button>
 </div>

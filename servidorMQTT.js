@@ -162,6 +162,20 @@ app.post('/api/nodocentral', async (req, res) => {
   }
 });
 
+app.get('/api/nodocentral/ultimo', async (req, res) => {
+  try {
+    const [rows] = await pool.promise().query('SELECT * FROM Nodocentral ORDER BY timestamp DESC LIMIT 1');
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ error: 'No se encontraron datos' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
 
 
 // Middleware para verificar JWT

@@ -9,9 +9,9 @@
     </a>
   </div>
 
-  <button class="menu-toggle" id="menuToggle">☰</button>
+  <button class="menu-toggle" id="menuToggle" (click)="menuToggle()">☰</button>
 
-  <nav id="navMenu">
+  <nav id="navMenu" [ngClass]="navActive ? 'active' : ''">
     <a [routerLink]="['/home']" (click)="scrollTop()" class="active">Inicio</a>
     <a [routerLink]="['/about']" (click)="scrollTop()">Acerca de</a>
     <a [routerLink]="['/info']" (click)="scrollTop()">Información</a>
@@ -37,15 +37,6 @@
     </div>
   </a>
 </header>
-
-<script>
-  const toggle = document.getElementById("menuToggle");
-  const nav = document.getElementById("navMenu");
-
-  toggle.addEventListener("click", () => {
-    nav.classList.toggle("active");
-  });
-</script>
 
 <!-- ========================
      Hero principal

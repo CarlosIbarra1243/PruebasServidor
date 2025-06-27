@@ -1,13 +1,15 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-about',
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './about.component.html',
   styleUrl: './about.component.css'
 })
 export class AboutComponent {
+  navActive : boolean = false;
   scrollTo(fragment: string) {
     setTimeout(() => {
       const element = document.getElementById(fragment);
@@ -23,5 +25,9 @@ export class AboutComponent {
     setTimeout(() => {
       window.scrollTo({ top: 0 });
     }, 0);
+  }
+
+  menuToggle(){
+    this.navActive = !this.navActive;
   }
 }

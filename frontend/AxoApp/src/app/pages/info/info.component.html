@@ -9,9 +9,9 @@
     </a>
   </div>
 
-  <button class="menu-toggle" id="menuToggle">☰</button>
+  <button class="menu-toggle" id="menuToggle" (click)="menuToggle()">☰</button>
 
-  <nav id="navMenu">
+  <nav id="navMenu" [ngClass]="navActive ? 'active' : ''">
     <a [routerLink]="['/home']" (click)="scrollTop()">Inicio</a>
     <a [routerLink]="['/about']" (click)="scrollTop()">Acerca de</a>
     <a [routerLink]="['/info']" (click)="scrollTop()" class="active">Información</a>

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'clave_ultrasecreta_xd'
+const JWT_SECRET = process.env.JWT_SECRET
 
 // Middleware para verificar JWT
 const authenticateToken = (req, res, next) => {
@@ -25,7 +25,7 @@ router.post('/register',
   [
     body('nombre')
       .trim()
-      .escape() // elimina caracteres
+      .escape() 
       .isLength({ min: 3, max: 50 }).withMessage('Nombre debe tener entre 3 y 50 caracteres')
       .matches(/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/).withMessage('Nombre solo puede tener letras y espacios'),
 

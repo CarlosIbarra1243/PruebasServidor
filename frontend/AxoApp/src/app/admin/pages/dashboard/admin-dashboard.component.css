@@ -322,3 +322,50 @@ button.activate-actuator{
   background-color: #e74c3c;
 }
 
+.door-status-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.door-card {
+  background-color: #fff;
+  width: 280px;
+  min-height: 140px;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-left: 10px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s ease;
+}
+
+.door-card.open {
+  border-left-color: #e74c3c; /* Rojo */
+}
+
+.door-card.closed {
+  border-left-color: #2ecc71; /* Verde */
+}
+
+.door-info {
+  text-align: center;
+}
+
+.door-info h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.door-state-text {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #222;
+}
+

@@ -60,6 +60,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   private timeoutAlarma: any;
   private subscriptions: Subscription[] = []; // Para manejar suscripciones
   errorMessage: string | null = null; // Para mostrar errores al usuario
+  doorStatus = { refrigerator: false, freezer: false };
 
   constructor(
     public websocketService: WebSocketService,
@@ -347,6 +348,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         if (this.selectedDeviceId === data.dispositivo_id) {
           this.updateDeviceCharts(data.dispositivo_id, data);
         }
+      }
+      if (data.dispositivo_id === this.selectedDeviceId) {
+        this.doorStatus.refrigerator = data.PuerRef === 1 || data.PuerRef === '1';
+        this.doorStatus.freezer      = data.PuerCon === 1 || data.PuerCon === '1';
       }
       this.cdr.detectChanges();
     });

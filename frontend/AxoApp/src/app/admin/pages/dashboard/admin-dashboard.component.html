@@ -29,6 +29,22 @@
 
 <div *ngIf="selectedDeviceId" class="dashboard-panel">
   <h2 class="panel-title">{{ selectedDeviceName }}</h2>
+    <!-- Estado de Puertas -->
+  <div class="door-status-grid">
+    <div class="door-card" [ngClass]="doorStatus.refrigerator ? 'open' : 'closed'">
+      <div class="door-info">
+        <h4>Puerta del Refrigerador</h4>
+        <p class="door-state-text">{{ doorStatus.refrigerator ? 'Abierta' : 'Cerrada' }}</p>
+      </div>
+    </div>
+
+    <div class="door-card" [ngClass]="doorStatus.freezer ? 'open' : 'closed'">
+      <div class="door-info">
+        <h4>Puerta del Congelador</h4>
+        <p class="door-state-text">{{ doorStatus.freezer ? 'Abierta' : 'Cerrada' }}</p>
+      </div>
+    </div>
+  </div>
   <!-- Nueva sección de control de actuadores -->
   @if (selectedDeviceModel === 'CoolSys-XR500') {
     <div class="actuator-control">

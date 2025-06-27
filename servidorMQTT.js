@@ -115,6 +115,33 @@ app.get('/api/estado_actuador', async (req, res) => {
   }
 });
 
+// ================= API: Insertar lectura en Nodocentral =================
+app.post('/api/nodocentral', async (req, res) => {
+  const { temperatura, humedad } = req.body;
+
+  // Validaciones básicas
+  if (
+    typeof temperatura !== 'number' ||
+    typeof humedad !== 'number' ||
+    temperatura < -50 || temperatura > 100 ||
+    humedad < 0 || humedad > 100
+  ) {
+    return res.status(400).json({ error: 'Datos inválidos' });
+  }
+
+  try {
+    const [result] = await pool.promise().query(
+      'INSERT INTO Nodocentral (temperatura, humedad) VALUES (?, ?)',
+      [temperatura, humedad]
+    );
+    return res.json({ success: true, insertId: result.insertId });
+  } catch (err) {
+    console.error('Error al insertar en Nodocentral:', err.message);
+    return res.status(500).json({ error: 'Error al guardar los datos' });
+  }
+});
+
+
 
 // Middleware para verificar JWT
 const authenticateToken = (req, res, next) => {

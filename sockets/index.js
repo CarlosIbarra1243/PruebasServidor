@@ -10,8 +10,8 @@ module.exports = (io, deviceStatus) => {
         socket.join(`usuario-${usuarioId}`);
         
         const [dispositivos] = await pool.query(
-          'SELECT id, nombre, api_key FROM dispositivos WHERE usuario_id = ?',
-          [usuarioId]
+          'SELECT id, nombre, api_key FROM dispositivos WHERE usuario_id = ? AND estado = ?',
+          [usuarioId, '1']
         );
 
         dispositivos.forEach(dispositivo => {

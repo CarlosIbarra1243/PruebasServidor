@@ -13,13 +13,13 @@ module.exports = {
 
       const [result] = await pool.query(
         `INSERT INTO datos (dispositivo_id, temperatura, humedad)
-         SELECT id, ?, ? FROM dispositivos WHERE api_key = ?`,
-        [parseFloat(temperatura), parseFloat(humedad), apiKey]
+         SELECT id, ?, ? FROM dispositivos WHERE api_key = ? AND estado = ?`,
+        [parseFloat(temperatura), parseFloat(humedad), apiKey, '1']
       );
 
       const [dispositivo] = await pool.query(
-        'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-        [apiKey]
+        'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+        [apiKey, '1']
       );
 
       if (client.usuarioId && dispositivo.length > 0) {

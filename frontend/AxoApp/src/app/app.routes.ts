@@ -8,10 +8,13 @@ import { AdminComponent } from './admin/admin.component';
 import { AdminDashboardComponent } from './admin/pages/dashboard/admin-dashboard.component';
 import { AdminStatisticsComponent } from './admin/pages/statistics/admin-statistics.component';
 import { AdminAlertsComponent } from './admin/pages/alerts/admin-alerts.component';
-import { AddDeviceComponent } from './admin/components/add-device/add-device.component';
+import { AddDeviceComponent } from './admin/pages/devices/add-device/add-device.component';
 import { AdminDevicesComponent } from './admin/pages/devices/admin-devices/admin-devices.component';
 import { AboutComponent } from './pages/about/about.component';
 import { InfoComponent } from './pages/info/info.component';
+import { ViewDeviceComponent } from './admin/pages/devices/view-device/view-device.component';
+import { EditDeviceComponent } from './admin/pages/devices/edit-device/edit-device.component';
+import { ListDeviceComponent } from './admin/pages/devices/list-device/list-device.component';
 
 export const routes: Routes = [
     {
@@ -70,7 +73,14 @@ export const routes: Routes = [
             },
             {
                 path: 'devices',
-                component: AdminDevicesComponent
+                component: AdminDevicesComponent,
+                children: [
+                { path: '', redirectTo: 'list', pathMatch: 'full' },
+                { path: 'list', component: ListDeviceComponent }, 
+                { path: 'add', component: AddDeviceComponent },
+                { path: 'view/:id', component: ViewDeviceComponent },
+                { path: 'edit/:id', component: EditDeviceComponent }
+                ]
             },
             {
                 path: 'add-device',

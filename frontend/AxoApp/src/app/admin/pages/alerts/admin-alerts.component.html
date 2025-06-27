@@ -47,14 +47,14 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let alert of paginatedAlerts" [class.pending]="alert.estado.toLowerCase() === 'pendiente'">
+      <tr *ngFor="let alert of paginatedAlerts">
         <td>{{ getDeviceName(alert.dispositivo_id) }}</td>
         <td>{{ alert.origen }}</td>
         <td>{{ alert.tipo }}</td>
-        <td>
-          {{ alert.estado }}
-          <span *ngIf="alert.estado.toLowerCase() === 'pendiente'" class="status-icon">⏳</span>
-          <span *ngIf="alert.estado.toLowerCase() === 'atendido'" class="status-icon">✔</span>
+        <td [ngClass]="{'attended': alert.estado.toLowerCase() === 'atendido', 'pending': alert.estado.toLowerCase() === 'pendiente'}">
+        {{ alert.estado }}
+        <span span *ngIf="alert.estado.toLowerCase() === 'pendiente'" class="status-icon">⏳</span>
+        <span *ngIf="alert.estado.toLowerCase() === 'atendido'" class="status-icon">✔</span>
         </td>
         <td>{{ alert.descripcion }}</td>
         <td>{{ alert.hora }}</td>
@@ -70,7 +70,9 @@
       <div class="alert-card-item" data-label="Tipo"><span>Tipo</span><span>{{ alert.tipo }}</span></div>
       <div class="alert-card-item" data-label="Descripción"><span>Descripción</span><span>{{ alert.descripcion }}</span></div>
       <div class="alert-card-item" data-label="Origen"><span>Origen</span><span>{{ alert.origen }}</span></div>
-      <div class="alert-card-item" data-label="Estado" [class.not-pending]="alert.estado.toLowerCase() !== 'pendiente'"><span>Estado</span><span>{{ alert.estado }}</span></div>
+      <div class="alert-card-item" data-label="Estado" [ngClass]="{'attended': alert.estado.toLowerCase() === 'atendido', 'pending': alert.estado.toLowerCase() === 'pendiente'}">
+        <span>Estado</span><span>{{ alert.estado }}</span>
+      </div>
     </div>
   </div>
   <div class="pagination-controls">

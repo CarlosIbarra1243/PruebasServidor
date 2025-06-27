@@ -9,8 +9,8 @@ module.exports = {
   
       if (client.apikey && client.usuarioId) {
         pool.query(
-          'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-          [client.apikey]
+          'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+          [client.apikey, '1']
         ).then(([results]) => {
           if (results.length > 0) {
             const dispositivo = results[0];
@@ -33,8 +33,8 @@ module.exports = {
       if (client.apikey && client.usuarioId) {
         const timeoutId = setTimeout(() => {
           pool.query(
-            'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-            [client.apikey]
+            'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+            [client.apikey, '1']
           ).then(([results]) => {
             if (results.length > 0) {
               const dispositivo = results[0];

@@ -4,8 +4,8 @@ module.exports = (client, username, password, callback) => {
   const apiKey = password?.toString();
   
   pool.query(
-    'SELECT usuario_id FROM dispositivos WHERE api_key = ?',
-    [apiKey]
+    'SELECT usuario_id FROM dispositivos WHERE api_key = ? AND estado = ?',
+    [apiKey, '1']
   ).then(([results]) => {
     if (!results.length) {
       console.log(`❌ Autenticación fallida: ${client.id}`);
@@ -18,8 +18,8 @@ module.exports = (client, username, password, callback) => {
     
     // Obtener detalles del dispositivo
     return pool.query(
-      'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-      [apiKey]
+      'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+      [apiKey, '1']
     ).then(([dispositivoResults]) => {
       if (dispositivoResults.length > 0) {
         const dispositivo = dispositivoResults[0];

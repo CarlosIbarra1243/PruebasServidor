@@ -73,8 +73,8 @@ router.get('/devices', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id; // Obtenido del token JWT
     const [devices] = await pool.promise().query(
-      'SELECT id, nombre, modelo FROM dispositivos WHERE usuario_id = ?',
-      [userId]
+      'SELECT id, nombre, modelo FROM dispositivos WHERE usuario_id = ? AND estado = ?',
+      [userId, '1']
     );
     res.json(devices);
   } catch (error) {
@@ -123,8 +123,8 @@ router.post('/editDevice/:id', authenticateToken, async (req, res) => {
 
     const userId = req.user.id;
     const [device] = await pool.promise().query(
-      'SELECT usuario_id FROM dispositivos WHERE id = ?',
-      [deviceId]
+      'SELECT usuario_id FROM dispositivos WHERE id = ? AND estado = ?',
+      [deviceId, '1']
     );
 
     if (device.length === 0) {
@@ -136,14 +136,14 @@ router.post('/editDevice/:id', authenticateToken, async (req, res) => {
     }
 
     await pool.promise().query(
-      'UPDATE dispositivos SET nombre = ?, modelo = ? WHERE id = ?',
-      [nombre, modelo, deviceId]
+      'UPDATE dispositivos SET nombre = ?, modelo = ? WHERE id = ? AND estado = ?',
+      [nombre, modelo, deviceId, '1']
     );
 
     // Devolver el dispositivo actualizado
     const [updatedDevice] = await pool.promise().query(
-      'SELECT id, nombre, modelo FROM dispositivos WHERE id = ?',
-      [deviceId]
+      'SELECT id, nombre, modelo FROM dispositivos WHERE id = ? AND estado = ?',
+      [deviceId, '1']
     );
     res.json(updatedDevice[0]);
   } catch (error) {
@@ -158,8 +158,8 @@ router.get('/devices/:id', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const [device] = await pool.promise().query(
-      'SELECT id, nombre, modelo, api_key FROM dispositivos WHERE id = ? AND usuario_id = ?',
-      [deviceId, userId]
+      'SELECT id, nombre, modelo, api_key FROM dispositivos WHERE id = ? AND usuario_id = ? AND estado = ?',
+      [deviceId, userId, '1']
     );
 
     if (device.length === 0) {
@@ -185,8 +185,8 @@ router.post('/deactivateDevice/:id', authenticateToken, async (req, res) => {
 
     // Verificar que el dispositivo existe y pertenece al usuario
     const [device] = await pool.promise().query(
-      'SELECT usuario_id FROM dispositivos WHERE id = ?',
-      [deviceId]
+      'SELECT usuario_id FROM dispositivos WHERE id = ? AND estado = ?',
+      [deviceId, '1']
     );
 
     if (device.length === 0) {
@@ -215,8 +215,8 @@ router.get('/alertas', authenticateToken, async (req, res) => {
     const { deviceId } = req.query;
     const userId = req.user.id;
 
-    let query = 'SELECT id, dispositivo_id, fecha, hora, tipo, descripcion, origen, estado FROM alarmas WHERE dispositivo_id IN (SELECT id FROM dispositivos WHERE usuario_id = ?)';
-    let params = [userId];
+    let query = 'SELECT id, dispositivo_id, fecha, hora, tipo, descripcion, origen, estado FROM alarmas WHERE dispositivo_id IN (SELECT id FROM dispositivos WHERE usuario_id = ? AND estado = ?)';
+    let params = [userId, '1'];
 
     if (deviceId) {
       query += ' AND dispositivo_id = ?';

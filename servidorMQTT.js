@@ -52,8 +52,8 @@ app.get('/api/dispositivos', async (req, res) => {
   if (!usuarioId) return res.status(400).json({ error: 'usuarioId requerido' });
   try {
     const [rows] = await pool.promise().query(
-      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ?',
-      [usuarioId]
+      'SELECT id, nombre FROM dispositivos WHERE usuario_id = ? AND estado = ?',
+      [usuarioId, '1']
     );
     const result = rows.map(d => ({
       id: d.id,
@@ -155,8 +155,8 @@ aedes.authenticate = (client, username, password, callback) => {
     
     // 1. Validar API Key y obtener usuario_id
     pool.query(
-      'SELECT usuario_id FROM dispositivos WHERE api_key = ?',
-      [apiKey],
+      'SELECT usuario_id FROM dispositivos WHERE api_key = ? AND estado = ?',
+      [apiKey, '1'],
       (err, results) => {
         if (err || !results.length) {
           console.log(`❌ Autenticación fallida: ${client.id}`);
@@ -170,8 +170,8 @@ aedes.authenticate = (client, username, password, callback) => {
         
         // 3. Obtener detalles del dispositivo (secuencialmente)
         pool.query(
-          'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-          [apiKey],
+          'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+          [apiKey, '1'],
           (err, results) => {
             if (err) return; // Manejar error si es necesario
             
@@ -209,8 +209,8 @@ aedes.on('client', (client) => {
     
   if (apiKey && client.usuarioId) {
     pool.query(
-      'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-      [apiKey],
+      'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+      [apiKey, '1'],
       (err, results) => {
         if (!err && results.length > 0) {
           const dispositivo = results[0];
@@ -259,8 +259,8 @@ aedes.on('clientDisconnect', (client) => {
       // Programar la verificación de estado después de 5 segundos
       const timeoutId = setTimeout(() => {
         pool.query(
-          'SELECT id, nombre FROM dispositivos WHERE api_key = ?',
-          [apiKey],
+          'SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?',
+          [apiKey, '1'],
           (err, results) => {
             if (!err && results.length > 0) {
               const dispositivo = results[0];
@@ -309,8 +309,8 @@ aedes.on('publish', async (packet, client) => {
   
         // 1) Obtener dispositivo
         const [[disp]] = await pool.promise().query(
-          `SELECT id, nombre FROM dispositivos WHERE api_key = ?`,
-          [apiKey]
+          `SELECT id, nombre FROM dispositivos WHERE api_key = ? AND estado = ?`,
+          [apiKey, '1']
         );
         if (!disp) throw new Error('Dispositivo no encontrado');
   
@@ -381,7 +381,7 @@ aedes.on('publish', async (packet, client) => {
         PuerRef
        )
        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ? 
-       FROM dispositivos WHERE api_key = ?`,
+       FROM dispositivos WHERE api_key = ? AND estado = ?`,
       [
         fecha,
         hora,
@@ -392,14 +392,15 @@ aedes.on('publish', async (packet, client) => {
         parseFloat(EnerCon),
         parseInt(PuerCon),
         parseInt(PuerRef),
-        apiKey
+        apiKey,
+        '1'
       ]
     );
 
     // Obtener información del dispositivo
     const [dispositivo] = await pool.promise().query(
-      'SELECT id, nombre, modelo FROM dispositivos WHERE api_key = ?',
-      [apiKey]
+      'SELECT id, nombre, modelo FROM dispositivos WHERE api_key = ? AND estado = ?',
+      [apiKey, '1']
     );
 
     // Enviar a dashboard con los datos recibidos
@@ -445,8 +446,8 @@ io.on('connection', (socket) => {
         
         // 2. Obtener dispositivos del usuario
         const [dispositivos] = await pool.promise().query(
-          'SELECT id, nombre, api_key FROM dispositivos WHERE usuario_id = ?',
-          [usuarioId]
+          'SELECT id, nombre, api_key FROM dispositivos WHERE usuario_id = ? AND estado = ?',
+          [usuarioId, '1']
         );
   
         // 3. Enviar estado actual de cada dispositivo

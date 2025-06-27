@@ -70,7 +70,6 @@ export class AuthComponent {
 
   onSubmit(type: 'login' | 'register') {
     if (type === 'login' && this.loginForm.valid) {
-      console.log(this.loginForm.value);
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
           const rol = this.authService.getRol();
@@ -84,9 +83,8 @@ export class AuthComponent {
       });
     } else if (type === 'register' && this.registerForm.valid) {
       const user = this.registerForm.value;
-      user.rol = 1; // Por defecto, rol de usuario común
+      user.rol = 1;
       user.fechaNacimiento = this.dateFormat(user.fechaNacimiento);
-      console.log(this.registerForm.value);
       this.authService.register(user).subscribe({
         next: () => {
           this.snackBar.open('¡Registro exitoso! Por favor, inicie sesión.', 'Cerrar', { duration: 5000 });

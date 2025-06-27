@@ -1,0 +1,25 @@
+<div class="header">
+  <div></div> <!-- Espaciador para alinear con el título de AdminDevices -->
+  <a [routerLink]="['../add']" class="add-button">Agregar nuevo</a>
+</div>
+<table class="devices-table">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Modelo</th>
+      <th class="actions">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let device of devices">
+      <td>{{ device.nombre }}</td>
+      <td>{{ device.modelo }}</td>
+      <td class="actions">
+        <a [routerLink]="['../view', device.id]" class="action-button view">Ver</a>
+        <a [routerLink]="['../edit', device.id]" class="action-button edit">Editar</a>
+        <button class="action-button delete" (click)="onDelete(device.id)">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p *ngIf="devices.length === 0" class="no-devices">No hay dispositivos disponibles.</p>

@@ -60,6 +60,10 @@
   background-color: #f8f9fa;
 }
 
+.alerts-table td.pending {
+  background-color: #ffebee;
+}
+
 .alert-card {
   background-color: #ffffff;
   border: 1px solid #dee2e6;
@@ -68,10 +72,36 @@
   margin-bottom: 15px;
 }
 
+.alert-card.pending {
+  background-color: #ffebee;
+}
+
 .alert-card-item {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.alert-card-item.pending {
+  background-color: #ffebee;
+}
+
+.attended {
+  background-color: #e8f5e9; 
+  color: #2e7d32; 
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.pending {
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.status-icon {
+  margin-left: 5px;
 }
 
 .pagination-controls {

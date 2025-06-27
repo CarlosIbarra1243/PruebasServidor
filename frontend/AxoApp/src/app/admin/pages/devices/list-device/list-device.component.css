@@ -1,0 +1,98 @@
+.devices-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.devices-table th,
+.devices-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.devices-table th {
+  background-color: #e9ecef;
+  font-weight: bold;
+  text-align: left; /* Centra el texto en todos los encabezados */
+}
+
+.devices-table th.actions {
+  text-align: center; /* Asegura que "Acciones" esté centrado */
+}
+
+.devices-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.actions {
+  display: flex;
+  justify-content: center; /* Centra los botones en la columna de Acciones */
+  gap: 20px; /* Espaciado horizontal entre botones */
+}
+
+.action-button {
+  padding: 8px 15px; /* Espaciado interno */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none; /* Elimina el subrayado de los enlaces */
+  display: inline-block; /* Asegura que los enlaces se comporten como botones */
+}
+
+.action-button.view {
+  background-color: #17a2b8; /* Azul para "Ver" */
+  color: white;
+}
+
+.action-button.view:hover {
+  background-color: #138496;
+}
+
+.action-button.edit {
+  background-color: #ffc107; /* Amarillo para "Editar" */
+  color: white;
+}
+
+.action-button.edit:hover {
+  background-color: #e0a800;
+}
+
+.action-button.delete {
+  background-color: #dc3545; /* Rojo para "Eliminar" */
+  color: white;
+}
+
+.action-button.delete:hover {
+  background-color: #c82333;
+}
+
+.no-devices {
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
+}
+
+/* Estilos para el botón "Agregar nuevo" en el header */
+.header {
+  display: flex;
+  justify-content: space-between; /* Alinea el espaciador a la izquierda y el botón a la derecha */
+  align-items: center; /* Alinea verticalmente con la altura del encabezado de la tabla */
+  margin-bottom: 20px;
+}
+
+.add-button {
+  background-color: #28a745; /* Verde para "Agregar nuevo" */
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none; /* Elimina el subrayado */
+  display: inline-block; /* Asegura que el enlace se comporte como botón */
+  transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+  background-color: #218838;
+}

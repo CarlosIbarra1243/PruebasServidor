@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { DeviceService } from '../../../services/device.service'; // Asegúrate de ajustar la ruta al servicio
+import { DeviceService } from '../../../../services/device.service';
 import { FormsModule } from '@angular/forms';
-import { v4 as uuidv4 } from 'uuid';
 
 import Swal from 'sweetalert2';
 
@@ -27,7 +26,7 @@ export class AddDeviceComponent {
         timer: 2000,
         showConfirmButton: false,
       }).then(() => {
-      this.router.navigate(['/admin/dashboard']).then(() => {
+      this.router.navigate(['/admin/devices/list']).then(() => {
         location.reload();
       });
       });
@@ -37,6 +36,6 @@ export class AddDeviceComponent {
   }
 
   onCancel() {
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['/admin/devices']);
   }
 }

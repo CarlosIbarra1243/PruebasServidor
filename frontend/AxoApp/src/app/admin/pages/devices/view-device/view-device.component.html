@@ -1,0 +1,17 @@
+<div class="form-container">
+  <h2>Información de dispositivo</h2>
+  <button type="button" class="back-button" (click)="onBack()">Regresar</button>
+  <form class="device-form">
+    <div class="form-group">
+      <label for="name">Nombre:</label>
+      <input #nameInput type="text" id="name" name="nombre" autocomplete="name" readonly>
+    </div>
+    <div class="form-group">
+      <label for="model">Modelo:</label>
+      <input #modelInput type="text" id="model" name="modelo" autocomplete="organization" readonly>
+    </div>
+  </form>
+  <div class="button-container">
+    <button type="button" class="api-key-button" (click)="showApiKeyModal()">Consultar API Key</button>
+  </div>
+</div>

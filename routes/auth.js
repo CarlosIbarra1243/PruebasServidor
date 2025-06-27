@@ -69,24 +69,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Obtención de datos del usuario
-// router.get('/:id', async (req, res) => {
-//     try {
-//         const userId = req.params.id;
-//         if (req.user.id !== parseInt(userId)){
-//             return res.status(403).json({ error: 'Acceso no autorizado al usuario' });
-//         }
-//         const [users] = await pool.promise().query('SELECT id, nombre, email, telefono, fecha_nacimiento, genero, rol FROM usuarios WHERE id = ?', [userId]);
-//         if (users.length === 0) {
-//             return res.status(404).json({ error: 'Usuario no encontrado' });
-//         }
-//         res.json(users[0]);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Error al obtener datos del usuario' });
-//     }
-// });
-
 router.get('/devices', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id; // Obtenido del token JWT
@@ -103,7 +85,6 @@ router.get('/devices', authenticateToken, async (req, res) => {
 
 router.post('/addDevice', authenticateToken, async (req, res) => {
   try {
-    console.log('Lo que estoy recibiendo en la API:', req.body);
     const { nombre, modelo } = req.body;
     if (!nombre || !modelo) {
       return res.status(400).json({ error: 'Faltan datos requeridos (nombre y modelo)' });
@@ -132,6 +113,103 @@ router.post('/addDevice', authenticateToken, async (req, res) => {
   }
 });
 
+router.post('/editDevice/:id', authenticateToken, async (req, res) => {
+  try {
+    const deviceId = req.params.id;
+    const { nombre, modelo } = req.body;
+    if (!nombre || !modelo) {
+      return res.status(400).json({ error: 'Faltan datos requeridos (nombre y modelo)' });
+    }
+
+    const userId = req.user.id;
+    const [device] = await pool.promise().query(
+      'SELECT usuario_id FROM dispositivos WHERE id = ?',
+      [deviceId]
+    );
+
+    if (device.length === 0) {
+      return res.status(404).json({ error: 'Dispositivo no encontrado' });
+    }
+
+    if (device[0].usuario_id !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este dispositivo' });
+    }
+
+    await pool.promise().query(
+      'UPDATE dispositivos SET nombre = ?, modelo = ? WHERE id = ?',
+      [nombre, modelo, deviceId]
+    );
+
+    // Devolver el dispositivo actualizado
+    const [updatedDevice] = await pool.promise().query(
+      'SELECT id, nombre, modelo FROM dispositivos WHERE id = ?',
+      [deviceId]
+    );
+    res.json(updatedDevice[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar dispositivo' });
+  }
+});
+
+router.get('/devices/:id', authenticateToken, async (req, res) => {
+  try {
+    const deviceId = req.params.id;
+    const userId = req.user.id;
+
+    const [device] = await pool.promise().query(
+      'SELECT id, nombre, modelo, api_key FROM dispositivos WHERE id = ? AND usuario_id = ?',
+      [deviceId, userId]
+    );
+
+    if (device.length === 0) {
+      return res.status(404).json({ error: 'Dispositivo no encontrado o no tienes acceso' });
+    }
+
+    res.json(device[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener el dispositivo' });
+  }
+});
+
+router.post('/deactivateDevice/:id', authenticateToken, async (req, res) => {
+  try {
+    const deviceId = req.params.id;
+    const { estado } = req.body;
+    const userId = req.user.id;
+
+    if (!estado) {
+      return res.status(400).json({ error: 'Falta el estado' });
+    }
+
+    // Verificar que el dispositivo existe y pertenece al usuario
+    const [device] = await pool.promise().query(
+      'SELECT usuario_id FROM dispositivos WHERE id = ?',
+      [deviceId]
+    );
+
+    if (device.length === 0) {
+      return res.status(404).json({ error: 'Dispositivo no encontrado' });
+    }
+
+    if (device[0].usuario_id !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este dispositivo' });
+    }
+
+    // Actualizar el estado del dispositivo
+    await pool.promise().query(
+      'UPDATE dispositivos SET estado = ? WHERE id = ?',
+      [estado, deviceId]
+    );
+
+    res.json({ message: 'Estado actualizado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar el estado' });
+  }
+});
+
 router.get('/alertas', authenticateToken, async (req, res) => {
   try {
     const { deviceId } = req.query;
@@ -152,6 +230,31 @@ router.get('/alertas', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener alertas' });
+  }
+});
+
+router.post('/validatePassword', authenticateToken, async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: 'Falta la contraseña' });
+    }
+
+    const userId = req.user.id;
+    const [user] = await pool.promise().query(
+      'SELECT password FROM usuarios WHERE id = ?',
+      [userId]
+    );
+
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const isValid = await bcrypt.compare(password, user[0].password);
+    res.json({ isValid });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al validar la contraseña' });
   }
 });
 
